@@ -61,7 +61,7 @@ function Add-Node {
     $y = [double]$Node.y
     $w = if ($null -ne $Node.w) { [double]$Node.w } else { 2.0 }
     $h = if ($null -ne $Node.h) { [double]$Node.h } else { 0.8 }
-    $shapeKind = if ($Node.shape) { [string]$Node.shape } else { "rectangle" }
+    $shapeKind = if ($Node.shape) { [string]$Node.shape } else { "roundrect" }
 
     switch ($shapeKind.ToLowerInvariant()) {
         "ellipse" {
@@ -87,10 +87,12 @@ function Add-Node {
     }
 
     if ($Node.text) { $shape.Text = [string]$Node.text }
-    Set-FormulaIfPresent $shape "FillForegnd" (Convert-HexToRgbFormula $Node.fill)
-    Set-FormulaIfPresent $shape "LineColor" (Convert-HexToRgbFormula $Node.line)
+    $fillColor = if ($Node.fill) { [string]$Node.fill } else { "#EFF6FF" }
+    $lineColor = if ($Node.line) { [string]$Node.line } else { "#3B82F6" }
+    Set-FormulaIfPresent $shape "FillForegnd" (Convert-HexToRgbFormula $fillColor)
+    Set-FormulaIfPresent $shape "LineColor" (Convert-HexToRgbFormula $lineColor)
     $fontName = if ($Node.fontName) { [string]$Node.fontName } else { "Microsoft YaHei" }
-    $fontSize = if ($null -ne $Node.fontSize) { $Node.fontSize } else { 16 }
+    $fontSize = if ($null -ne $Node.fontSize) { $Node.fontSize } else { 11 }
     Set-FontFamilyIfPresent $shape $fontName
     Set-FontSizeIfPresent $shape $fontSize
     return $shape
@@ -109,9 +111,10 @@ function Add-Connection {
     $connector.CellsU("EndX").GlueTo($ShapesById[$toId].CellsU("PinX"))
 
     if ($Connection.text) { $connector.Text = [string]$Connection.text }
-    Set-FormulaIfPresent $connector "LineColor" (Convert-HexToRgbFormula $Connection.line)
+    $connLine = if ($Connection.line) { [string]$Connection.line } else { "#475569" }
+    Set-FormulaIfPresent $connector "LineColor" (Convert-HexToRgbFormula $connLine)
     $fontName = if ($Connection.fontName) { [string]$Connection.fontName } else { "Microsoft YaHei" }
-    $fontSize = if ($null -ne $Connection.fontSize) { $Connection.fontSize } else { 16 }
+    $fontSize = if ($null -ne $Connection.fontSize) { $Connection.fontSize } else { 10 }
     Set-FontFamilyIfPresent $connector $fontName
     Set-FontSizeIfPresent $connector $fontSize
     $textPinX = if ($null -ne $Connection.textPinX) { [double]$Connection.textPinX } else { 0.35 }

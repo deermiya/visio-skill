@@ -42,9 +42,11 @@ Coordinates are in Visio inches. `x` and `y` are the lower-left corner of the no
 ## Drawing Guidance
 
 - Use explicit coordinates for predictable layout.
-- Keep diagrams readable: align nodes in rows/columns, leave at least `0.4` inches between shapes, and route left-to-right or top-to-bottom unless the user asks otherwise.
-- Default node text is `Microsoft YaHei` at `16 pt`; make boxes tall and wide enough for this size.
-- For side-by-side boxes with labeled connectors, make the connector span longer than the label text. Leave at least `max(1.4 in, label characters * 0.12 in)` of horizontal gap, plus arrowhead room.
+- Keep diagrams readable: align nodes in rows/columns, leave at least `0.6` to `1.0` inches between shapes, and route left-to-right or top-to-bottom unless the user asks otherwise.
+- Default shape is `roundrect` (rounded rectangle). Default fill is a premium light blue `#EFF6FF` with a border of `#3B82F6`. Default node text is `Microsoft YaHei` at `11 pt`.
+- Default connector line color is slate gray `#475569` with `10 pt` text, automatically using `"textPinX": 0.35` and `"textOffsetY": 0.18` to avoid overlap.
+- Utilize premium, low-saturation pastel colors for different layers/roles (e.g., `#EFF6FF` / `#3B82F6` for main logic, `#ECFDF5` / `#10B981` for start/success, `#FEF3C7` / `#D97706` for storage, `#F5F3FF` / `#8B5CF6` for external API).
+- For side-by-side boxes with labeled connectors, leave at least `max(1.4 in, label characters * 0.12 in)` of horizontal gap, plus arrowhead room.
 - Use short labels inside shapes. Put longer explanations in callouts or external notes.
 - For architecture diagrams, group by layer: clients, edge/API, services, data, external systems.
 - For process diagrams, use left-to-right flow unless there are many steps; then use rows.

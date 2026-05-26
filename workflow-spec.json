@@ -1,0 +1,155 @@
+{
+  "title": "Visio Skill Workflow",
+  "pageWidth": 11,
+  "pageHeight": 9.0,
+  "pages": [
+    {
+      "name": "Workflow",
+      "nodes": [
+        {
+          "id": "start",
+          "text": "开始",
+          "shape": "ellipse",
+          "x": 4.5,
+          "y": 8.0,
+          "w": 2.0,
+          "h": 0.5,
+          "fill": "#ECFDF5",
+          "line": "#10B981"
+        },
+        {
+          "id": "llm_layout",
+          "text": "大模型规划布局与样式",
+          "shape": "roundrect",
+          "x": 4.5,
+          "y": 7.0,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#EFF6FF",
+          "line": "#3B82F6"
+        },
+        {
+          "id": "gen_json",
+          "text": "生成 JSON Spec 文件",
+          "shape": "roundrect",
+          "x": 4.5,
+          "y": 6.0,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#EFF6FF",
+          "line": "#3B82F6"
+        },
+        {
+          "id": "run_script",
+          "text": "调用 PowerShell 脚本",
+          "shape": "roundrect",
+          "x": 4.5,
+          "y": 5.0,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#EFF6FF",
+          "line": "#3B82F6"
+        },
+        {
+          "id": "decide_visio",
+          "text": "本地是否安装 Visio？",
+          "shape": "diamond",
+          "x": 4.5,
+          "y": 3.7,
+          "w": 2.0,
+          "h": 0.8,
+          "fill": "#FEF3C7",
+          "line": "#D97706"
+        },
+        {
+          "id": "draw_shapes",
+          "text": "通过 COM 自动化绘图",
+          "shape": "roundrect",
+          "x": 4.5,
+          "y": 2.6,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#EFF6FF",
+          "line": "#3B82F6"
+        },
+        {
+          "id": "save_vsdx",
+          "text": "保存并导出 .vsdx 文件",
+          "shape": "roundrect",
+          "x": 4.5,
+          "y": 1.6,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#EFF6FF",
+          "line": "#3B82F6"
+        },
+        {
+          "id": "fallback",
+          "text": "降级提供 Mermaid/SVG",
+          "shape": "roundrect",
+          "x": 1.5,
+          "y": 3.8,
+          "w": 2.0,
+          "h": 0.6,
+          "fill": "#FFF1F2",
+          "line": "#F43F5E"
+        },
+        {
+          "id": "end",
+          "text": "结束",
+          "shape": "ellipse",
+          "x": 4.5,
+          "y": 0.6,
+          "w": 2.0,
+          "h": 0.5,
+          "fill": "#ECFDF5",
+          "line": "#10B981"
+        }
+      ],
+      "connections": [
+        {
+          "from": "start",
+          "to": "llm_layout"
+        },
+        {
+          "from": "llm_layout",
+          "to": "gen_json"
+        },
+        {
+          "from": "gen_json",
+          "to": "run_script"
+        },
+        {
+          "from": "run_script",
+          "to": "decide_visio"
+        },
+        {
+          "from": "decide_visio",
+          "to": "draw_shapes",
+          "text": "是",
+          "textPinX": 0.4,
+          "textOffsetY": 0.15
+        },
+        {
+          "from": "draw_shapes",
+          "to": "save_vsdx"
+        },
+        {
+          "from": "save_vsdx",
+          "to": "end"
+        },
+        {
+          "from": "decide_visio",
+          "to": "fallback",
+          "text": "否",
+          "textPinX": 0.4,
+          "textOffsetY": 0.15
+        },
+        {
+          "from": "fallback",
+          "to": "end"
+        }
+      ]
+    }
+  ]
+}

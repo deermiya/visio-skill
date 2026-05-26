@@ -45,11 +45,11 @@ If `pages` is omitted, the script treats the top-level object as one page and re
 }
 ```
 
-Supported `shape` values: `rectangle`, `roundrect`, `ellipse`, `diamond`.
+Supported `shape` values: `rectangle`, `roundrect`, `ellipse`, `diamond`. Defaults to `roundrect`.
 
 Coordinates are in inches. `x` and `y` are the lower-left corner. `w` and `h` are width and height.
 
-When omitted, node text defaults to `Microsoft YaHei` and `16 pt`.
+When omitted, node shape defaults to `roundrect`, fill to `#EFF6FF` (soft blue), border to `#3B82F6` (blue), and node text to `Microsoft YaHei` at `11 pt`.
 
 ## Connection
 
@@ -58,9 +58,9 @@ When omitted, node text defaults to `Microsoft YaHei` and `16 pt`.
   "from": "api",
   "to": "users",
   "text": "REST",
-  "line": "#555555",
+  "line": "#475569",
   "fontName": "Microsoft YaHei",
-  "fontSize": 16,
+  "fontSize": 10,
   "textPinX": 0.35,
   "textOffsetY": 0.18,
   "endArrow": 4
@@ -69,7 +69,7 @@ When omitted, node text defaults to `Microsoft YaHei` and `16 pt`.
 
 `from` and `to` must match node IDs on the same page. `endArrow` defaults to `4`.
 
-Connection labels default to `Microsoft YaHei` and `16 pt`. `textPinX` is the label position along the connector width (`0.35` keeps it away from the arrowhead). `textOffsetY` moves the label above the line in inches.
+Connection labels default to `Microsoft YaHei` and `10 pt`. Connection line defaults to `#475569` (slate gray). `textPinX` is the label position along the connector width (`0.35` keeps it away from the arrowhead). `textOffsetY` moves the label above the line in inches.
 
 ## Notes
 
