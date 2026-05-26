@@ -28,14 +28,23 @@
 
 *(如需验证 Visio COM 接口是否可用，可在 PowerShell 中运行：`New-Object -ComObject Visio.Application`)*
 
-## 用户使用说明
+## 安装与使用说明
 
-作为用户，你无需手动运行任何脚本或配置 JSON。只需在支持技能的 AI 工具（如 Cursor、Antigravity 等）的对话窗口中直接提出绘图需求即可。例如：
+### 1. 安装技能
+通常情况下，你只需将本仓库克隆（或下载解压）到你的 AI Agent 约定的 Skills 目录下即可（例如 `~/.cursor/skills/visio-skill` 或 `~/.gemini/antigravity/skills/visio-skill`）。
+*注意：请保持现有的目录结构。AI 会以 `SKILL.md` 为统一入口，并在后台自主调用 `scripts` 和 `references` 等目录下的文件。*
 
-- *“请帮我画一个电商系统的架构图，包含 Web 端、API 网关、订单服务、库存服务和数据库。”*
+### 2. 使用方法
+作为用户，你**无需手动去运行任何脚本、加载多个文件，或配置 JSON**。只需在支持技能的 AI 工具（如 Cursor、Antigravity 等）的对话窗口中，直接提及该技能并提出绘图需求即可。例如：
+
+- *“@visio-skill 请帮我画一个电商系统的架构图，包含 Web 端、API 网关、订单服务、库存服务和数据库。”*
 - *“用 Visio 画一个用户登录的流程图，要求横向排列。”*
 
-AI 将自动理解你的需求，计算并规划排版坐标，最终在本地自动生成对应的 `.vsdx` 图表文件。
+**背后发生了什么？**
+1. AI 识别触发意图后，会主动阅读本目录下的 `SKILL.md` 指令。
+2. 根据 `SKILL.md` 的指示，AI 会在后台自动读取所需格式的参考文件，并生成结构化的 JSON 数据。
+3. AI 自动通过终端运行本目录下的 `scripts/New-VisioDiagram.ps1` 脚本，将图表渲染出来。
+整个多文件协作的过程，完全由 AI Agent 在后台自主闭环完成，对用户透明。
 
 ## 工作流程（供 Agent 参考）
 
