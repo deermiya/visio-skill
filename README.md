@@ -1,4 +1,4 @@
-# visio-vsdx
+# visio-skill
 
 这是一个 AI Agent 技能（Skill），通过调用本地 Visio COM 接口自动化生成或修改 Microsoft Visio `.vsdx` 图表文件。
 
