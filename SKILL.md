@@ -1,6 +1,6 @@
 ---
 name: visio-skill
-description: Generate or modify Microsoft Visio .vsdx diagrams using local Visio COM automation. Use when the user asks Codex to create Visio files, draw flowcharts, architecture diagrams, swimlane-style layouts, network topology diagrams, process maps, or to automate shapes/connectors/text in Microsoft Visio on Windows.
+description: Generate or modify Microsoft Visio .vsdx diagrams using local Visio COM automation. Use when the user asks Codex to create Visio files, draw flowcharts, architecture diagrams, sequence diagrams, swimlane-style layouts, network topology diagrams, process maps, or to automate shapes/connectors/text in Microsoft Visio on Windows.
 ---
 
 # Visio Skill
@@ -17,7 +17,11 @@ Create a JSON spec first, then run the script. Keep output files in the user's r
 
 ## JSON Spec
 
-Read `references/spec-format.md` when you need the full format. The minimum useful shape is:
+This skill supports two diagram types:
+
+### 1. Standard Diagrams (flowcharts, architecture, etc.)
+
+Read `references/spec-format.md` for the full format. Minimum example:
 
 ```json
 {
@@ -39,7 +43,38 @@ Read `references/spec-format.md` when you need the full format. The minimum usef
 
 Coordinates are in Visio inches. `x` and `y` are the lower-left corner of the node; `w` and `h` are width and height.
 
+### 2. Sequence Diagrams (UML interaction diagrams)
+
+Read `references/sequence-format.md` for the full specification. Minimum example:
+
+```json
+{
+  "type": "sequence",
+  "title": "Login Flow",
+  "actors": [
+    { "id": "user", "name": "User", "type": "actor" },
+    { "id": "api", "name": "API", "type": "system" },
+    { "id": "db", "name": "Database", "type": "database" }
+  ],
+  "messages": [
+    { "from": "user", "to": "api", "text": "POST /login", "type": "sync" },
+    { "from": "api", "to": "db", "text": "Query user", "type": "sync" },
+    { "from": "db", "to": "api", "text": "User record", "type": "return" },
+    { "from": "api", "to": "user", "text": "JWT token", "type": "return" }
+  ]
+}
+```
+
+**Key features**:
+- Set `"type": "sequence"` to activate sequence diagram mode
+- Define `actors` (participants) with optional type (`actor`, `system`, `database`, `external`)
+- Define `messages` with `from`, `to`, `text`, and `type` (`sync`, `async`, or `return`)
+- Actors are positioned left-to-right, messages flow top-to-bottom
+- Lifelines and activation boxes are drawn automatically
+
 ## Drawing Guidance
+
+### Standard Diagrams
 
 - Use explicit coordinates for predictable layout.
 - Keep diagrams readable: align nodes in rows/columns, leave at least `0.6` to `1.0` inches between shapes, and route left-to-right or top-to-bottom unless the user asks otherwise.
@@ -51,6 +86,21 @@ Coordinates are in Visio inches. `x` and `y` are the lower-left corner of the no
 - For architecture diagrams, group by layer: clients, edge/API, services, data, external systems.
 - For process diagrams, use left-to-right flow unless there are many steps; then use rows.
 - For swimlane-like diagrams, represent lanes with lightly filled large rectangles behind nodes, or create separate rows with lane labels.
+
+### Sequence Diagrams
+
+- Define actors in **logical order** (left-to-right), typically: user → frontend → backend → database → external services.
+- Use **descriptive actor names** that clearly identify each participant (e.g., "User", "Web App", "Auth Service", "PostgreSQL").
+- Choose appropriate **actor types** for automatic color coding:
+  - `"actor"` for users/people (blue)
+  - `"system"` for internal services (purple)
+  - `"database"` for data stores (amber)
+  - `"external"` for third-party APIs (green)
+- Order messages **chronologically** from top to bottom, representing the actual execution flow.
+- Use `"type": "sync"` for method calls/requests, `"type": "return"` for responses (shown as dashed arrows).
+- Keep message labels **concise but meaningful** (e.g., "POST /login", "Query user", "JWT token").
+- For complex flows, limit to **4-6 actors** maximum; split into multiple diagrams if needed.
+- Default spacing is sensible; override `layout.actorSpacing` or `layout.messageSpacing` only if the diagram is too cramped or sparse.
 
 ## Validation
 

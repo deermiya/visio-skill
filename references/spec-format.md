@@ -2,6 +2,23 @@
 
 Use this format with `scripts/New-VisioDiagram.ps1`.
 
+## Diagram Types
+
+This spec supports two diagram types:
+
+1. **Standard Diagrams** (default) - Flowcharts, architecture diagrams, network topology, etc.
+   - Use `nodes` and `connections` arrays
+   - See format details below
+
+2. **Sequence Diagrams** - UML-style interaction diagrams
+   - Set `"type": "sequence"` in the JSON
+   - Use `actors` and `messages` arrays
+   - See [`sequence-format.md`](sequence-format.md) for full specification
+
+---
+
+## Standard Diagram Format
+
 ## Top Level
 
 ```json

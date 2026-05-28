@@ -11,13 +11,15 @@
 - **原生 `.vsdx` 生成**：直接构建可编辑的 Microsoft Visio 图表文件，而非静态图片或普通的 SVG。
 - **JSON 驱动设计**：通过简单的 JSON Schema 声明页面（pages）、节点（nodes）和连线（connections）来生成图表。
 - **精准的坐标定位**：使用显式的英寸坐标（x, y, w, h），确保图表布局一致且符合预期。
-- **多场景图表支持**：支持绘制流程图、架构图、泳道图、网络拓扑图等多种常见图表。
+- **多场景图表支持**：支持绘制流程图、架构图、时序图、泳道图、网络拓扑图等多种常见图表。
+- **专业时序图支持**：内置 UML 时序图模式，自动绘制生命线、激活框和消息箭头，支持同步/异步/返回消息类型。
 
 ## 目录结构
 
 - `SKILL.md` - Agent 的主指令文件，定义了 AI 的工作流、行为准则及图表绘制约束。
 - `scripts/New-VisioDiagram.ps1` - 核心 PowerShell 脚本，负责与 Visio COM 对象交互并构建图表。
-- `references/spec-format.md` - 完整的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
+- `references/spec-format.md` - 标准图表的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
+- `references/sequence-format.md` - 时序图的 JSON 规范文档，详述 actors、messages 和 layout 的格式要求。
 - `agents/` - 针对特定 AI Agent 平台的专属配置、提示词（Prompt）或封装脚本。
 
 ## 环境要求
@@ -37,8 +39,9 @@
 ### 2. 使用方法
 作为用户，你**无需手动去运行任何脚本、加载多个文件，或配置 JSON**。只需在支持技能的 AI 工具（如 Cursor、Antigravity 等）的对话窗口中，直接提及该技能并提出绘图需求即可。例如：
 
-- *“@visio-skill 请帮我画一个电商系统的架构图，包含 Web 端、API 网关、订单服务、库存服务和数据库。”*
-- *“用 Visio 画一个用户登录的流程图，要求横向排列。”*
+- *”@visio-skill 请帮我画一个电商系统的架构图，包含 Web 端、API 网关、订单服务、库存服务和数据库。”*
+- *”用 Visio 画一个用户登录的流程图，要求横向排列。”*
+- *”画一个用户认证的时序图，包含 User、Web App、Auth Service 和 Database 四个参与者。”*
 
 **背后发生了什么？**
 1. AI 识别触发意图后，会主动阅读本目录下的 `SKILL.md` 指令。
@@ -55,7 +58,9 @@
    powershell -ExecutionPolicy Bypass -File "<skill目录>/scripts/New-VisioDiagram.ps1" -SpecPath "diagram.json" -OutputPath "diagram.vsdx"
    ```
 
-## 精简版 JSON 示例
+## JSON 示例
+
+### 标准流程图
 
 ```json
 {
@@ -74,3 +79,57 @@
   ]
 }
 ```
+
+### 时序图
+
+```json
+{
+  "type": "sequence",
+  "title": "User Authentication Flow",
+  "actors": [
+    { "id": "user", "name": "User", "type": "actor" },
+    { "id": "web", "name": "Web App", "type": "system" },
+    { "id": "api", "name": "Auth Service", "type": "system" },
+    { "id": "db", "name": "Database", "type": "database" }
+  ],
+  "messages": [
+    { "from": "user", "to": "web", "text": "Enter credentials", "type": "sync" },
+    { "from": "web", "to": "api", "text": "POST /login", "type": "sync" },
+    { "from": "api", "to": "db", "text": "Query user", "type": "sync" },
+    { "from": "db", "to": "api", "text": "User record", "type": "return" },
+    { "from": "api", "to": "web", "text": "JWT token", "type": "return" },
+    { "from": "web", "to": "user", "text": "Redirect to dashboard", "type": "return" }
+  ]
+}
+```
+
+---
+
+## 更新日志
+
+### v2.0 - 2026-05-28
+**🎉 新增：时序图支持**
+
+- ✨ **新增时序图模式**：通过设置 `"type": "sequence"` 自动生成 UML 时序图
+- 📐 **自动布局**：智能绘制 actors、lifelines、消息箭头，无需手动计算坐标
+- 🎨 **语义化配色**：4 种参与者类型自动着色（actor/system/database/external）
+- 📄 **完整文档**：新增 `references/sequence-format.md` 详细规范
+- 🔄 **消息类型**：支持同步调用（实线箭头）和返回消息（虚线箭头）
+- 🎯 **示例文件**：提供 `example-sequence.json` 参考模板
+
+**技术细节**：
+- 扩展 `New-VisioDiagram.ps1` 脚本，新增 `Add-SequenceDiagram` 函数
+- 支持自定义布局参数（actorSpacing、messageSpacing、startY、lifelineHeight）
+- 兼容原有的标准图表绘制模式，通过 `type` 字段自动分支
+
+---
+
+### v1.0 - 初始版本
+**基础功能**
+
+- ✅ 标准图表支持：流程图、架构图、泳道图、网络拓扑图
+- ✅ JSON 驱动设计：通过声明式配置生成图表
+- ✅ 精准坐标定位：英寸级坐标控制（x, y, w, h）
+- ✅ 多页面支持：单个 .vsdx 文件包含多个页面
+- ✅ 自定义样式：支持颜色、字体、线型等完整配置
+- ✅ COM 自动化：PowerShell 脚本调用 Visio COM 接口

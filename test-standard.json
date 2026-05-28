@@ -1,0 +1,10 @@
+{
+  "title": "Test Standard",
+  "nodes": [
+    { "id": "a", "text": "Start", "x": 1, "y": 6, "w": 2, "h": 0.8 },
+    { "id": "b", "text": "End", "x": 4, "y": 6, "w": 2, "h": 0.8 }
+  ],
+  "connections": [
+    { "from": "a", "to": "b", "text": "flow" }
+  ]
+}

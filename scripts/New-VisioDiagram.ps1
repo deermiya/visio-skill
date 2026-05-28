@@ -126,6 +126,122 @@ function Add-Connection {
     return $connector
 }
 
+function Get-ActorTypeColors {
+    param([string]$Type)
+    switch ($Type.ToLowerInvariant()) {
+        "actor"    { return @{ Fill = "#EFF6FF"; Line = "#3B82F6" } }
+        "system"   { return @{ Fill = "#F5F3FF"; Line = "#8B5CF6" } }
+        "database" { return @{ Fill = "#FEF3C7"; Line = "#D97706" } }
+        "external" { return @{ Fill = "#ECFDF5"; Line = "#10B981" } }
+        default    { return @{ Fill = "#EFF6FF"; Line = "#3B82F6" } }
+    }
+}
+
+function Add-SequenceDiagram {
+    param($Visio, $Page, $Spec)
+
+    $actors = @($Spec.actors)
+    $messages = @($Spec.messages)
+    $layout = $Spec.layout
+
+    # Default layout values
+    $actorSpacing = if ($layout.actorSpacing) { [double]$layout.actorSpacing } else { 3.0 }
+    $messageSpacing = if ($layout.messageSpacing) { [double]$layout.messageSpacing } else { 0.6 }
+    $startY = if ($layout.startY) { [double]$layout.startY } else { 8.0 }
+    $lifelineHeight = if ($layout.lifelineHeight) { [double]$layout.lifelineHeight } else { 6.0 }
+
+    $actorBoxWidth = 1.6
+    $actorBoxHeight = 0.6
+    $lifelineWidth = 0.02
+    $activationWidth = 0.15
+
+    # Calculate starting X position to center the diagram
+    $totalWidth = ($actors.Count - 1) * $actorSpacing + $actorBoxWidth
+    $startX = 1.0
+
+    # Track actor positions and shapes
+    $actorData = @{}
+    $activationStack = @{}  # Track activation depth for each actor
+
+    # Draw actors and lifelines
+    for ($i = 0; $i -lt $actors.Count; $i++) {
+        $actor = $actors[$i]
+        $actorId = [string]$actor.id
+        $centerX = $startX + ($i * $actorSpacing)
+        $boxX = $centerX - ($actorBoxWidth / 2)
+        $boxY = $startY - $actorBoxHeight
+
+        # Get colors
+        $colors = Get-ActorTypeColors $actor.type
+        $fillColor = if ($actor.fill) { [string]$actor.fill } else { $colors.Fill }
+        $lineColor = if ($actor.line) { [string]$actor.line } else { $colors.Line }
+
+        # Draw actor box
+        $actorBox = $Page.DrawRectangle($boxX, $boxY, $boxX + $actorBoxWidth, $boxY + $actorBoxHeight)
+        $actorBox.Text = if ($actor.name) { [string]$actor.name } else { $actorId }
+        Set-FormulaIfPresent $actorBox "FillForegnd" (Convert-HexToRgbFormula $fillColor)
+        Set-FormulaIfPresent $actorBox "LineColor" (Convert-HexToRgbFormula $lineColor)
+        Set-FontFamilyIfPresent $actorBox "Microsoft YaHei"
+        Set-FontSizeIfPresent $actorBox 10
+
+        # Draw lifeline (dashed vertical line)
+        $lifelineX = $centerX - ($lifelineWidth / 2)
+        $lifelineBottom = $boxY - $lifelineHeight
+        $lifeline = $Page.DrawLine($centerX, $boxY, $centerX, $lifelineBottom)
+        $lifeline.CellsU("LinePattern").ResultIU = 2  # Dashed line
+        Set-FormulaIfPresent $lifeline "LineColor" (Convert-HexToRgbFormula "#94A3B8")
+        $lifeline.CellsU("LineWeight").FormulaU = "0.5 pt"
+
+        $actorData[$actorId] = @{
+            CenterX = $centerX
+            BoxY = $boxY
+            LifelineBottom = $lifelineBottom
+            Box = $actorBox
+            Lifeline = $lifeline
+        }
+
+        $activationStack[$actorId] = @()
+    }
+
+    # Draw messages
+    $currentY = $startY - $actorBoxHeight - 0.3
+
+    foreach ($msg in $messages) {
+        $fromId = [string]$msg.from
+        $toId = [string]$msg.to
+
+        if (-not $actorData.ContainsKey($fromId)) { throw "Message source '$fromId' not found in actors." }
+        if (-not $actorData.ContainsKey($toId)) { throw "Message target '$toId' not found in actors." }
+
+        $fromX = $actorData[$fromId].CenterX
+        $toX = $actorData[$toId].CenterX
+        $msgType = if ($msg.type) { [string]$msg.type } else { "sync" }
+
+        # Draw message arrow
+        $arrow = $Page.DrawLine($fromX, $currentY, $toX, $currentY)
+
+        if ($msg.text) {
+            $arrow.Text = [string]$msg.text
+            $arrow.CellsU("TxtPinX").FormulaU = "Width*0.5"
+            $arrow.CellsU("TxtPinY").FormulaU = "Height*0.5+0.15 in"
+        }
+
+        Set-FormulaIfPresent $arrow "LineColor" (Convert-HexToRgbFormula "#475569")
+        Set-FontFamilyIfPresent $arrow "Microsoft YaHei"
+        Set-FontSizeIfPresent $arrow 9
+
+        # Set arrow style based on message type
+        if ($msgType -eq "return") {
+            $arrow.CellsU("LinePattern").ResultIU = 2  # Dashed
+            $arrow.CellsU("EndArrow").ResultIU = 1     # Simple arrow
+        } else {
+            $arrow.CellsU("EndArrow").ResultIU = 4     # Filled arrow
+        }
+
+        $currentY -= $messageSpacing
+    }
+}
+
 $resolvedSpec = Resolve-Path -LiteralPath $SpecPath
 $json = Get-Content -LiteralPath $resolvedSpec -Raw -Encoding UTF8 | ConvertFrom-Json
 $resolvedOutput = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
@@ -141,34 +257,56 @@ try {
     $visio.Visible = [bool]$Visible
     $doc = $visio.Documents.Add("")
 
-    if ($null -ne $json.pages) {
-        [object[]]$pages = @($json.pages)
-    }
-    else {
-        [object[]]$pages = @($json)
-    }
-    for ($i = 0; $i -lt $pages.Count; $i++) {
-        $pageSpec = $pages[$i]
-        $page = if ($i -eq 0) { $visio.ActivePage } else { $doc.Pages.Add() }
-        if ($pageSpec.name) { $page.Name = [string]$pageSpec.name }
+    # Check if this is a sequence diagram
+    $diagramType = if ($json.type) { [string]$json.type } else { "standard" }
 
-        $pageWidth = if ($pageSpec.pageWidth) { $pageSpec.pageWidth } elseif ($json.pageWidth) { $json.pageWidth } else { 11 }
-        $pageHeight = if ($pageSpec.pageHeight) { $pageSpec.pageHeight } elseif ($json.pageHeight) { $json.pageHeight } else { 8.5 }
-        $page.PageSheet.CellsU("PageWidth").ResultIU = [double]$pageWidth
-        $page.PageSheet.CellsU("PageHeight").ResultIU = [double]$pageHeight
+    if ($diagramType -eq "sequence") {
+        # Handle sequence diagram
+        $page = $visio.ActivePage
+        if ($json.title) { $page.Name = [string]$json.title }
 
-        $shapesById = @{}
-        foreach ($node in @($pageSpec.nodes)) {
-            if (-not $node.id) { throw "Every node must include an id." }
-            $shapesById[[string]$node.id] = Add-Node $page $node
-        }
+        $pageWidth = if ($json.pageWidth) { [double]$json.pageWidth } else { 11 }
+        $pageHeight = if ($json.pageHeight) { [double]$json.pageHeight } else { 8.5 }
+        $page.PageSheet.CellsU("PageWidth").ResultIU = $pageWidth
+        $page.PageSheet.CellsU("PageHeight").ResultIU = $pageHeight
 
-        foreach ($connection in @($pageSpec.connections)) {
-            Add-Connection $visio $page $shapesById $connection | Out-Null
-        }
+        Add-SequenceDiagram $visio $page $json
 
         if ($Diagnostics) {
-            Write-Output "Page '$($page.Name)' has $($page.Shapes.Count) shapes before save."
+            Write-Output "Sequence diagram '$($page.Name)' has $($page.Shapes.Count) shapes."
+        }
+    }
+    else {
+        # Handle standard diagrams (original logic)
+        if ($null -ne $json.pages) {
+            [object[]]$pages = @($json.pages)
+        }
+        else {
+            [object[]]$pages = @($json)
+        }
+        for ($i = 0; $i -lt $pages.Count; $i++) {
+            $pageSpec = $pages[$i]
+            $page = if ($i -eq 0) { $visio.ActivePage } else { $doc.Pages.Add() }
+            if ($pageSpec.name) { $page.Name = [string]$pageSpec.name }
+
+            $pageWidth = if ($pageSpec.pageWidth) { $pageSpec.pageWidth } elseif ($json.pageWidth) { $json.pageWidth } else { 11 }
+            $pageHeight = if ($pageSpec.pageHeight) { $pageSpec.pageHeight } elseif ($json.pageHeight) { $json.pageHeight } else { 8.5 }
+            $page.PageSheet.CellsU("PageWidth").ResultIU = [double]$pageWidth
+            $page.PageSheet.CellsU("PageHeight").ResultIU = [double]$pageHeight
+
+            $shapesById = @{}
+            foreach ($node in @($pageSpec.nodes)) {
+                if (-not $node.id) { throw "Every node must include an id." }
+                $shapesById[[string]$node.id] = Add-Node $page $node
+            }
+
+            foreach ($connection in @($pageSpec.connections)) {
+                Add-Connection $visio $page $shapesById $connection | Out-Null
+            }
+
+            if ($Diagnostics) {
+                Write-Output "Page '$($page.Name)' has $($page.Shapes.Count) shapes before save."
+            }
         }
     }
 

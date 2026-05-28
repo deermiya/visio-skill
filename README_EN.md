@@ -19,6 +19,7 @@ From any AI‑enabled tool that supports skills (Cursor, Antigravity, etc.), sim
 
 - `@visio-skill Please draw an e‑commerce architecture diagram with Web Frontend, API Gateway, Order Service, Inventory Service, and Database.`
 - `Create a user‑login flowchart in Visio, arranged horizontally.`
+- `Draw a sequence diagram for user authentication with User, Web App, Auth Service, and Database.`
 
 The agent will automatically: 
 1. Parse the request.
@@ -39,7 +40,9 @@ powershell -ExecutionPolicy Bypass -File "<skill_dir>/scripts/New-VisioDiagram.p
 
 ---
 
-## Minimal JSON Example
+## JSON Examples
+
+### Standard Flowchart
 
 ```json
 {
@@ -59,6 +62,29 @@ powershell -ExecutionPolicy Bypass -File "<skill_dir>/scripts/New-VisioDiagram.p
 }
 ```
 
+### Sequence Diagram
+
+```json
+{
+  "type": "sequence",
+  "title": "User Authentication Flow",
+  "actors": [
+    { "id": "user", "name": "User", "type": "actor" },
+    { "id": "web", "name": "Web App", "type": "system" },
+    { "id": "api", "name": "Auth Service", "type": "system" },
+    { "id": "db", "name": "Database", "type": "database" }
+  ],
+  "messages": [
+    { "from": "user", "to": "web", "text": "Enter credentials", "type": "sync" },
+    { "from": "web", "to": "api", "text": "POST /login", "type": "sync" },
+    { "from": "api", "to": "db", "text": "Query user", "type": "sync" },
+    { "from": "db", "to": "api", "text": "User record", "type": "return" },
+    { "from": "api", "to": "web", "text": "JWT token", "type": "return" },
+    { "from": "web", "to": "user", "text": "Redirect to dashboard", "type": "return" }
+  ]
+}
+```
+
 ---
 
 ## Validation
@@ -70,6 +96,39 @@ After execution, verify that the `.vsdx` file exists and is non‑empty. If need
 ## Compatibility Note
 
 The skill relies on the Windows‑only Visio COM API; it will not run on macOS or Linux without a Windows VM or remote execution environment. In such cases, consider alternative formats like Mermaid, SVG, or draw.io.
+
+---
+
+---
+
+## Changelog
+
+### v2.0 - 2026-05-28
+**🎉 New: Sequence Diagram Support**
+
+- ✨ **Sequence diagram mode**: Set `"type": "sequence"` to auto-generate UML sequence diagrams
+- 📐 **Auto-layout**: Intelligent rendering of actors, lifelines, and message arrows—no manual coordinate calculation
+- 🎨 **Semantic coloring**: 4 actor types with automatic color coding (actor/system/database/external)
+- 📄 **Complete documentation**: New `references/sequence-format.md` specification
+- 🔄 **Message types**: Support for sync calls (solid arrows) and return messages (dashed arrows)
+- 🎯 **Example file**: Includes `example-sequence.json` reference template
+
+**Technical details**:
+- Extended `New-VisioDiagram.ps1` script with new `Add-SequenceDiagram` function
+- Customizable layout parameters (actorSpacing, messageSpacing, startY, lifelineHeight)
+- Backward-compatible with standard diagram mode via `type` field detection
+
+---
+
+### v1.0 - Initial Release
+**Core Features**
+
+- ✅ Standard diagram support: flowcharts, architecture diagrams, swimlanes, network topology
+- ✅ JSON-driven design: declarative configuration for diagram generation
+- ✅ Precise coordinate control: inch-level positioning (x, y, w, h)
+- ✅ Multi-page support: multiple pages in a single .vsdx file
+- ✅ Custom styling: full support for colors, fonts, line patterns, etc.
+- ✅ COM automation: PowerShell script invoking Visio COM interface
 
 ---
 

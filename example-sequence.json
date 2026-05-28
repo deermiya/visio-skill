@@ -1,0 +1,68 @@
+{
+  "type": "sequence",
+  "title": "User Authentication Flow",
+  "actors": [
+    {
+      "id": "user",
+      "name": "User",
+      "type": "actor"
+    },
+    {
+      "id": "web",
+      "name": "Web App",
+      "type": "system"
+    },
+    {
+      "id": "api",
+      "name": "Auth Service",
+      "type": "system"
+    },
+    {
+      "id": "db",
+      "name": "Database",
+      "type": "database"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "web",
+      "text": "Enter credentials",
+      "type": "sync"
+    },
+    {
+      "from": "web",
+      "to": "api",
+      "text": "POST /login",
+      "type": "sync"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "text": "Query user",
+      "type": "sync"
+    },
+    {
+      "from": "db",
+      "to": "api",
+      "text": "User record",
+      "type": "return"
+    },
+    {
+      "from": "api",
+      "to": "web",
+      "text": "JWT token",
+      "type": "return"
+    },
+    {
+      "from": "web",
+      "to": "user",
+      "text": "Redirect to dashboard",
+      "type": "return"
+    }
+  ],
+  "layout": {
+    "actorSpacing": 2.8,
+    "messageSpacing": 0.5
+  }
+}
