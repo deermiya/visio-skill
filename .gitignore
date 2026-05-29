@@ -1,0 +1,32 @@
+# All generated Visio files
+*.vsdx
+*.vsd
+*.vsdm
+
+# Test and example JSON files (keep only documented examples)
+test-*.json
+network-topology.json
+
+# User-generated batch files
+*.bat
+
+# Windows
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+
+# Backup files
+*~
+*.bak
+*.swp
+
+# Logs
+*.log
+
+# Keep only:
+# - scripts/
+# - references/
+# - agents/
+# - README.md, README_EN.md, SKILL.md
+# - example-sequence.json (documented example)

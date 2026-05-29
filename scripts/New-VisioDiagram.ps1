@@ -54,8 +54,65 @@ function Set-FontFamilyIfPresent {
     }
 }
 
+$script:StencilLookup = $null
+
+function Resolve-StencilPath {
+    param($Visio, [string]$FileOrPath)
+    # 完整路径直接用
+    if (Test-Path -LiteralPath $FileOrPath) { return (Resolve-Path -LiteralPath $FileOrPath).Path }
+
+    # 懒加载路径索引（首次扫描 VISIO CONTENT 建缓存，30天有效）
+    if ($null -eq $script:StencilLookup) {
+        $cacheFile = Join-Path $env:TEMP 'visio-stencil-paths.json'
+        $rebuild = $true
+        if (Test-Path -LiteralPath $cacheFile) {
+            $age = (Get-Date) - (Get-Item $cacheFile).LastWriteTime
+            if ($age.TotalDays -lt 30) {
+                try {
+                    $obj = Get-Content $cacheFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                    $script:StencilLookup = @{}
+                    foreach ($p in $obj.PSObject.Properties) { $script:StencilLookup[$p.Name] = $p.Value }
+                    $rebuild = $false
+                } catch { $rebuild = $true }
+            }
+        }
+        if ($rebuild) {
+            $content = Join-Path $Visio.Path 'VISIO CONTENT'
+            $script:StencilLookup = @{}
+            Get-ChildItem -Path $content -Recurse -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Extension -in '.vssx','.vss','.vssm' } |
+                ForEach-Object { $script:StencilLookup[$_.Name.ToUpperInvariant()] = $_.FullName }
+            $script:StencilLookup | ConvertTo-Json -Compress |
+                Set-Content -LiteralPath $cacheFile -Encoding UTF8
+        }
+    }
+
+    $key = (Split-Path -Leaf $FileOrPath).ToUpperInvariant()
+    if ($script:StencilLookup.ContainsKey($key)) { return $script:StencilLookup[$key] }
+    throw "Stencil '$FileOrPath' not found. Delete '$env:TEMP\visio-stencil-paths.json' to rebuild cache."
+}
+
 function Add-Node {
-    param($Page, $Node)
+    param($Page, $Node, $StencilsById)
+
+    # 模具图标分支：声明了 stencil + master 时，从模具 Drop 真实图标，而不是画几何形状
+    if ($Node.stencil -and $Node.master) {
+        $stencilId = [string]$Node.stencil
+        if ($null -eq $StencilsById -or -not $StencilsById.ContainsKey($stencilId)) {
+            throw "Node references stencil '$stencilId' not declared in top-level 'stencils' array."
+        }
+        $stencilDoc = $StencilsById[$stencilId]
+        $masterName = [string]$Node.master
+        $master = $null
+        try { $master = $stencilDoc.Masters.ItemU($masterName) } catch { }   # 先按通用名(NameU)
+        if ($null -eq $master) { try { $master = $stencilDoc.Masters.Item($masterName) } catch { } } # 再按显示名(Name)
+        if ($null -eq $master) { throw "Master '$masterName' not found in stencil '$stencilId'." }
+        $shape = $Page.Drop($master, [double]$Node.x, [double]$Node.y)  # x,y 为图标中心点
+        if ($Node.text) { $shape.Text = [string]$Node.text }
+        if ($null -ne $Node.w) { $shape.CellsU("Width").ResultIU = [double]$Node.w }
+        if ($null -ne $Node.h) { $shape.CellsU("Height").ResultIU = [double]$Node.h }
+        return $shape
+    }
 
     $x = [double]$Node.x
     $y = [double]$Node.y
@@ -278,6 +335,14 @@ try {
     }
     else {
         # Handle standard diagrams (original logic)
+        # 先打开 spec 里声明的所有模具：自动解析路径 + 隐藏只读方式加载(flag 66 = 只读2 + 隐藏64)
+        $stencilsById = @{}
+        foreach ($s in @($json.stencils)) {
+            if (-not $s.id) { throw "Every stencil entry must include an id." }
+            $stencilPath = Resolve-StencilPath $visio ([string]$s.file)
+            $stencilsById[[string]$s.id] = $visio.Documents.OpenEx($stencilPath, 66)
+            if ($Diagnostics) { Write-Output "Opened stencil '$($s.id)' -> $stencilPath" }
+        }
         if ($null -ne $json.pages) {
             [object[]]$pages = @($json.pages)
         }
@@ -297,7 +362,7 @@ try {
             $shapesById = @{}
             foreach ($node in @($pageSpec.nodes)) {
                 if (-not $node.id) { throw "Every node must include an id." }
-                $shapesById[[string]$node.id] = Add-Node $page $node
+                $shapesById[[string]$node.id] = Add-Node $page $node $stencilsById
             }
 
             foreach ($connection in @($pageSpec.connections)) {

@@ -43,7 +43,38 @@ Read `references/spec-format.md` for the full format. Minimum example:
 
 Coordinates are in Visio inches. `x` and `y` are the lower-left corner of the node; `w` and `h` are width and height.
 
-### 2. Sequence Diagrams (UML interaction diagrams)
+### 2. Stencil Icons (模具图标)
+
+Standard diagrams can drop **real Visio icons** from built-in stencils (e.g., routers, servers, PCs). Declare stencils at top level, then reference them in nodes:
+
+```json
+{
+  "title": "Network Topology",
+  "stencils": [
+    { "id": "net", "file": "NETSYM_M.VSSX" },
+    { "id": "srv", "file": "SERVER_M.VSSX" },
+    { "id": "hw",  "file": "PERIPH_M.VSSX" }
+  ],
+  "nodes": [
+    { "id": "r1", "stencil": "net", "master": "Router", "text": "核心路由", "x": 4, "y": 7 },
+    { "id": "s1", "stencil": "srv", "master": "Web server", "text": "Web服务器", "x": 7, "y": 7 },
+    { "id": "fw", "stencil": "hw",  "master": "Firewall", "text": "防火墙", "x": 4, "y": 4 }
+  ],
+  "connections": [
+    { "from": "r1", "to": "fw", "text": "LAN" },
+    { "from": "fw", "to": "s1", "text": "DMZ" }
+  ]
+}
+```
+
+**Key rules**:
+- `file`: stencil filename (auto-resolved, no full path needed). See `references/stencil-catalog.md` for all available stencils and master names.
+- `master`: prefer **NameU** (English, cross-language stable), e.g., `"Router"`, `"Web server"`, `"Firewall"`. Chinese Name also works.
+- Master node `x`,`y` = **center point** (unlike geometric nodes where `x`,`y` = lower-left corner).
+- Master nodes ignore `fill`/`line`/`shape`; the icon has its own styling.
+- Geometric nodes and master nodes can coexist on the same page.
+
+### 3. Sequence Diagrams (UML interaction diagrams)
 
 Read `references/sequence-format.md` for the full specification. Minimum example:
 
