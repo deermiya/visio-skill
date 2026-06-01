@@ -1,6 +1,6 @@
 # Visio Diagram JSON Spec
 
-Use this format with `scripts/New-VisioDiagram.ps1`.
+Use this format with `scripts/New-VisioDiagram.py`.
 
 ## Diagram Types
 
@@ -60,14 +60,11 @@ To use Visio built-in stencil shapes (network devices, servers, cloud icons, etc
 - `file`: Stencil filename (`.vssx` or `.vss`) or full path
 
 **Common stencil files** (installed with Visio):
-- `NETSYM_M.VSSX` - Network symbols (routers, switches, hubs, gateways)
-- `SERVER_M.VSSX` - Servers and racks
-- `COMPS_M.VSSX` - Computers and monitors
-- `CISCONETWORKSHAPES_M.VSSX` - Cisco network devices
+- `NETSYM_M.VSSX` - Network symbols (路由器, 工作组交换机, 网关, 主机, etc.)
+- `SERVER_M.VSSX` - Servers (服务器, Web 服务器, 数据库服务器, 打印服务器, etc.)
+- `COMPS_M.VSSX` - Computers (PC, 笔记本电脑, 平板电脑, LCD 显示器, etc.)
 - `AZURECLOUD_M.VSSX` - Azure cloud services
 - `AWSCOMPUTE_M.VSSX` - AWS compute services
-- `AWSSTORAGE_M.VSSX` - AWS storage services
-- `KUBERNETESVISIOSTENCIL_M.VSSX` - Kubernetes icons
 
 See `stencil-reference.md` for a comprehensive list.
 

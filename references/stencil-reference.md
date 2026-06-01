@@ -1,147 +1,114 @@
 # Visio Stencil Reference
 
 This document lists commonly available Visio stencil files and their master shapes.
+**Master names are from live COM enumeration and verified accurate.**
 
-## How to Find Stencil Files
+## Stencil File Locations
 
-Visio stencil files (`.vssx` or `.vss`) are typically located at:
+Visio stencil files (`.vssx`) are typically at:
 - **Chinese (Simplified)**: `C:\Program Files\Microsoft Office\root\Office16\Visio Content\2052\`
 - **English (US)**: `C:\Program Files\Microsoft Office\root\Office16\Visio Content\1033\`
 
-## Common Stencil Categories
+## Network & Infrastructure
 
-### Network & Infrastructure
+### NETSYM_M.VSSX — Network Symbols (24 masters)
 
-#### NETSYM_M.VSSX - Network Symbols [BANNED]
-> [!WARNING]
-> DO NOT USE. Causes headless COM automation to hang due to `EventDrop` modal popups. Use styled basic shapes instead.
-Basic network devices and components (DO NOT USE):
-- `路由器` / `Router`
-- `ATM 路由器` / `ATM Router`
-- `ISDN 交换机` / `ISDN Switch`
-- `ATM 交换机` / `ATM Switch`
-- `工作组交换机` / `Workgroup Switch`
-- `小型集线器` / `Mini Hub`
-- `100BaseT 集线器` / `100BaseT Hub`
-- `网桥` / `Bridge`
-- `网关` / `Gateway`
-- `主机` / `Host`
-- `WAN`
-- `DSU/CSU`
-- `防火墙` / `Firewall`
-- `调制解调器` / `Modem`
+| # | Master Name | Description |
+|---|-------------|-------------|
+| 1 | 路由器 | Router |
+| 2 | ATM 路由器 | ATM Router |
+| 3 | ISDN 交换机 | ISDN Switch |
+| 4 | ATM 交换机 | ATM Switch |
+| 5 | ATM/FastGB 以太网交换机 | ATM/FastGB Ethernet Switch |
+| 6 | 工作组交换机 | Workgroup Switch |
+| 7 | 小型集线器 | Mini Hub |
+| 8 | 100BaseT 集线器 | 100BaseT Hub |
+| 9 | CDDI/FDDI 集中器 | CDDI/FDDI Concentrator |
+| 10 | 终端服务器 | Terminal Server |
+| 11 | 通信服务器 | Communication Server |
+| 12 | 探测器 | Probe |
+| 13 | 网桥 | Bridge |
+| 14 | 网关 | Gateway |
+| 15 | WAN | WAN |
+| 16 | DSU/CSU | DSU/CSU |
+| 17 | 主机 | Host |
+| 18 | 关系数据库 | Relational Database |
+| 19 | 锁 | Lock |
+| 20 | 锁和密钥 | Lock and Key |
+| 21 | 密钥 | Key |
+| 22 | 公钥/私钥服务器 | Public/Private Key Server |
+| 23 | 证书服务器 | Certificate Server |
+| 24 | 动态连接线 | Dynamic Connector |
 
-#### CISCONETWORKSHAPES_M.VSSX - Cisco Network Devices [BANNED]
-> [!WARNING]
-> DO NOT USE. Causes headless COM automation to hang due to `EventDrop` modal popups. Use styled basic shapes instead.
-Professional Cisco-branded network equipment icons (DO NOT USE)
+### SERVER_M.VSSX — Servers (17 masters)
 
-#### SERVER_M.VSSX - Servers and Racks [BANNED]
-> [!WARNING]
-> DO NOT USE. Causes headless COM automation to hang due to `EventDrop` modal popups. Use styled basic shapes instead.
-- `服务器` / `Server`
-- `Web 服务器` / `Web Server`
-- `数据库服务器` / `Database Server`
-- `文件服务器` / `File Server`
-- `机架` / `Rack`
+| # | Master Name | Description |
+|---|-------------|-------------|
+| 1 | 服务器 | Server |
+| 2 | 文件服务器 | File Server |
+| 3 | 电子邮件服务器 | Email Server |
+| 4 | Web 服务器 | Web Server |
+| 5 | 代理服务器 | Proxy Server |
+| 6 | 实时通信服务器 | Real-time Communication Server |
+| 7 | 电子商务服务器 | E-commerce Server |
+| 8 | 数据库服务器 | Database Server |
+| 9 | 内容管理服务器 | Content Management Server |
+| 10 | FTP 服务器 | FTP Server |
+| 11 | 流化媒体服务器 | Streaming Media Server |
+| 12 | 管理服务器 | Management Server |
+| 13 | 目录服务器 | Directory Server |
+| 14 | 打印服务器 | Print Server |
+| 15 | 移动信息服务器 | Mobile Info Server |
+| 16 | 应用程序服务器 | Application Server |
+| 17 | 动态连接线 | Dynamic Connector |
 
-#### COMPS_M.VSSX - Computers and Monitors [BANNED]
-> [!WARNING]
-> DO NOT USE. Causes headless COM automation to hang due to `EventDrop` modal popups. Use styled basic shapes instead.
-- `PC`
-- `工作站` / `Workstation`
-- `笔记本电脑` / `Laptop`
-- `显示器` / `Monitor`
-- `打印机` / `Printer`
+### COMPS_M.VSSX — Computers and Monitors (10 masters)
 
-### Cloud Services
+| # | Master Name | Description |
+|---|-------------|-------------|
+| 1 | PC | PC |
+| 2 | 笔记本电脑 | Laptop |
+| 3 | LCD 显示器 | LCD Monitor |
+| 4 | 终端 | Terminal |
+| 5 | 平板电脑 | Tablet |
+| 6 | PDA | PDA |
+| 7 | iMac | iMac |
+| 8 | 新式 iMac | Modern iMac |
+| 9 | CRT 监视器 | CRT Monitor |
+| 10 | 动态连接线 | Dynamic Connector |
 
-#### AZURECLOUD_M.VSSX - Azure Cloud Services
-Azure cloud service icons
+## Cloud Services (未逐一验证，使用前建议用发现脚本确认)
 
-#### AZURECOMPUTE_M.VSSX - Azure Compute
-Azure virtual machines and compute resources
-
-#### AZURENETWORKING_M.VSSX - Azure Networking
-Azure networking components
-
-#### AZUREDATABASES_M.VSSX - Azure Databases
-Azure database services
-
-#### AZURESTORAGE_M.VSSX - Azure Storage
-Azure storage services
-
-#### AWSCOMPUTE_M.VSSX - AWS Compute
-AWS EC2 and compute services
-
-#### AWSSTORAGE_M.VSSX - AWS Storage
-AWS S3 and storage services
-
-#### AWSNETCONTENTDELIVERY_M.VSSX - AWS Networking
-AWS networking and content delivery
-
-### Container & Orchestration
-
-#### KUBERNETESVISIOSTENCIL_M.VSSX - Kubernetes
-Kubernetes components and icons
-
-### Other Useful Stencils
-
-#### ARROWS_M.VSSX - Arrows and Connectors
-Various arrow shapes and directional indicators
-
-#### ANNOT_M.VSSX - Annotations
-Callouts, notes, and annotation shapes
-
-#### ANALYTICS_M.VSSX - Analytics
-Data analytics and visualization shapes
+- `AZURECLOUD_M.VSSX` — Azure Cloud Services
+- `AZURECOMPUTE_M.VSSX` — Azure Compute
+- `AZURENETWORKING_M.VSSX` — Azure Networking
+- `AZUREDATABASES_M.VSSX` — Azure Databases
+- `AZURESTORAGE_M.VSSX` — Azure Storage
+- `AWSCOMPUTE_M.VSSX` — AWS Compute
+- `AWSSTORAGE_M.VSSX` — AWS Storage
+- `AWSNETCONTENTDELIVERY_M.VSSX` — AWS Networking
+- `KUBERNETESVISIOSTENCIL_M.VSSX` — Kubernetes
 
 ## How to Discover Master Names
 
-To list all masters in a stencil file, use PowerShell:
+Use Python to list all masters in any stencil file:
 
-```powershell
-$visio = New-Object -ComObject Visio.Application
-$visio.Visible = $false
-$stencil = $visio.Documents.OpenEx("C:\Path\To\Stencil.vssx", 64)
-$stencil.Masters | ForEach-Object { $_.Name }
-$stencil.Close()
-$visio.Quit()
+```python
+import win32com.client
+
+visio = win32com.client.Dispatch("Visio.Application")
+visio.Visible = False
+s = visio.Documents.OpenEx(r"C:\Path\To\Stencil.vssx", 64)
+for i in range(1, s.Masters.Count + 1):
+    print(f"{i}: {s.Masters.Item(i).Name}")
+visio.Quit()
 ```
 
-## Language Considerations
+## Important Notes
 
-- Stencil files in the `2052` folder contain Chinese master names
-- Stencil files in the `1033` folder contain English master names
-- Use the exact master name as it appears in the stencil
-- Master names are case-sensitive
-
-## Tips for Using Stencils
-
-1. **Exact Names**: Master names must match exactly as they appear in the stencil
-2. **Language Consistency**: Use Chinese names for Chinese stencils, English for English stencils
-3. **Fallback to Basic Shapes**: If a stencil or master isn't found, the script will fail - always verify names first
-4. **Mixed Usage**: You can mix stencil masters and basic shapes in the same diagram
-5. **Custom Stencils**: You can use your own custom `.vssx` files by providing the full path
-
-## Example Usage
-
-```json
-{
-  "stencils": [
-    { "id": "network", "file": "NETSYM_M.VSSX" },
-    { "id": "server", "file": "SERVER_M.VSSX" },
-    { "id": "aws", "file": "AWSCOMPUTE_M.VSSX" }
-  ],
-  "nodes": [
-    {
-      "id": "router1",
-      "stencil": "network",
-      "master": "路由器",
-      "text": "Core Router",
-      "x": 2,
-      "y": 5
-    }
-  ]
-}
-```
+1. **Master names must be exact** — case-sensitive, including spaces (e.g., `Web 服务器` not `Web服务器`)
+2. **Use Chinese names for `2052` stencils**, English names for `1033` stencils
+3. **`动态连接线` exists in every stencil** — ignore it, use `ConnectorToolDataObject` for connections instead
+4. **No "防火墙" master** — NETSYM_M does not contain a firewall shape; use `网关` as the closest alternative
+5. **No "打印机" in COMPS_M** — use `打印服务器` from SERVER_M instead
+6. **Mixed usage works** — stencil masters and basic shapes (`rectangle`, `roundrect`, `ellipse`, `diamond`) can coexist in one diagram

@@ -41,7 +41,7 @@
         },
         {
           "id": "run_script",
-          "text": "调用 PowerShell 脚本",
+          "text": "调用 Python 脚本",
           "shape": "roundrect",
           "x": 4.5,
           "y": 5.0,

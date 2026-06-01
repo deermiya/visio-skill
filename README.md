@@ -4,7 +4,7 @@
 
 ## 简介
 
-该技能使 AI Agent（如 Cursor、Copilot、Antigravity 等）能够在 Windows 计算机上原生创建真实的、可编辑的 Microsoft Visio 图表。它的工作原理是将 Agent 对图表结构的理解转换为声明式的 JSON 配置规范，随后由专用的 PowerShell 脚本解析该规范，并调用本地 Visio COM API 渲染出标准的 `.vsdx` 文件。
+该技能使 AI Agent（如 Cursor、Copilot、Antigravity 等）能够在 Windows 计算机上原生创建真实的、可编辑的 Microsoft Visio 图表。它的工作原理是将 Agent 对图表结构的理解转换为声明式的 JSON 配置规范，随后由专用的 Python 脚本解析该规范，并调用本地 Visio COM API 渲染出标准的 `.vsdx` 文件。
 
 ## 核心特性
 
@@ -19,7 +19,8 @@
 ## 目录结构
 
 - `SKILL.md` - Agent 的主指令文件，定义了 AI 的工作流、行为准则及图表绘制约束。
-- `scripts/New-VisioDiagram.ps1` - 核心 PowerShell 脚本，负责与 Visio COM 对象交互并构建图表。
+- `scripts/New-VisioDiagram.py` - 核心 Python 脚本，负责与 Visio COM 对象交互并构建图表。
+- `scripts/New-VisioDiagram.ps1` - 旧版 PowerShell 脚本（已弃用，仅供参考）。
 - `references/spec-format.md` - 标准图表的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
 - `references/sequence-format.md` - 时序图的 JSON 规范文档，详述 actors、messages 和 layout 的格式要求。
 - `references/stencil-reference.md` - Visio Stencil 模板参考文档，列出常用的 Stencil 文件及其 Master 图标名称。
@@ -30,9 +31,9 @@
 
 - **Windows 操作系统**
 - 本地已安装 **Microsoft Visio**，且能够正常调用 COM 接口。
-- **PowerShell** 运行环境
+- **Python 3.10+** 及 `pywin32` 包（`pip install pywin32`）
 
-*(如需验证 Visio COM 接口是否可用，可在 PowerShell 中运行：`New-Object -ComObject Visio.Application`)*
+*(如需验证 Visio COM 接口是否可用，可在 Python 中运行：`import win32com.client; win32com.client.Dispatch("Visio.Application")`)*
 
 ## 安装与使用说明
 
@@ -50,16 +51,16 @@
 **背后发生了什么？**
 1. AI 识别触发意图后，会主动阅读本目录下的 `SKILL.md` 指令。
 2. 根据 `SKILL.md` 的指示，AI 会在后台自动读取所需格式的参考文件，并生成结构化的 JSON 数据。
-3. AI 自动通过终端运行本目录下的 `scripts/New-VisioDiagram.ps1` 脚本，将图表渲染出来。
+3. AI 自动通过终端运行本目录下的 `scripts/New-VisioDiagram.py` 脚本，将图表渲染出来。
 整个多文件协作的过程，完全由 AI Agent 在后台自主闭环完成，对用户透明。
 
 ## 工作流程（供 Agent 参考）
 
 1. **理解与规划**：AI 解析用户的图表绘制需求，并规划整体布局。
 2. **生成 JSON**：AI 创建一份表示节点和连线结构的 JSON 配置文件，并保存到本地（如 `diagram.json`）。
-3. **执行脚本**：AI 调用 PowerShell 脚本以渲染生成文件：
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File "<skill目录>/scripts/New-VisioDiagram.ps1" -SpecPath "diagram.json" -OutputPath "diagram.vsdx"
+3. **执行脚本**：AI 调用 Python 脚本以渲染生成文件：
+   ```bash
+   python "<skill目录>/scripts/New-VisioDiagram.py" "diagram.json" "diagram.vsdx"
    ```
 
 ## JSON 示例
@@ -110,6 +111,19 @@
 ---
 
 ## 更新日志
+
+### v3.0 - 2026-06-01
+**🔧 绘图引擎重构：PowerShell → Python**
+
+- 🐍 **Python 绘图引擎**：新增 `New-VisioDiagram.py`，替换原 PowerShell 脚本作为默认绘图引擎
+- 🔓 **Visio 传统模具全面解禁**：`NETSYM_M.VSSX`、`SERVER_M.VSSX`、`COMPS_M.VSSX` 等传统模具恢复可用（此前因 PowerShell COM 线程死锁被误判为"弹窗导致卡死"而禁用）
+- 📋 **模具参考手册重写**：`stencil-reference.md` 基于实机 COM 枚举结果全面重写，master 名称 100% 准确
+- 🐛 **修正示例文件**：修正 `network-topology-stencil.json` 中不存在的 master 名称（防火墙→网关，打印机→打印服务器）
+
+**技术细节**：
+- 根因：PowerShell 的 COM 互操作默认以 MTA 线程模型运行，而 Visio COM 要求 STA，批量操作时产生线程死锁
+- Python `win32com.client` 默认工作在 STA 模式，天然兼容 Visio COM，彻底消除死锁
+- 旧版 `New-VisioDiagram.ps1` 保留在 `scripts/` 目录，仅供参考
 
 ### v2.0 - 2026-05-28
 **🎉 新增：时序图支持**

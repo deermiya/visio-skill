@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Visio Skill** automatically generates or modifies Microsoft Visio `.vsdx` diagrams using local Visio COM automation. It is designed for Windows environments where Microsoft Visio is installed. Users only need to describe the desired diagram in natural language; the skill handles JSON spec creation and PowerShell script execution behind the scenes.
+The **Visio Skill** automatically generates or modifies Microsoft Visio `.vsdx` diagrams using local Visio COM automation. It is designed for Windows environments where Microsoft Visio is installed. Users only need to describe the desired diagram in natural language; the skill handles JSON spec creation and Python script execution behind the scenes.
 
 ---
 
@@ -24,7 +24,7 @@ From any AI‑enabled tool that supports skills (Cursor, Antigravity, etc.), sim
 The agent will automatically: 
 1. Parse the request.
 2. Generate a structured JSON spec.
-3. Execute `scripts/New-VisioDiagram.ps1` to render the `.vsdx` file.
+3. Execute `scripts/New-VisioDiagram.py` to render the `.vsdx` file.
 
 ---
 
@@ -32,9 +32,9 @@ The agent will automatically:
 
 1. **Understanding & Planning** – Analyze the user request and decide on a layout.
 2. **JSON Generation** – Produce a JSON file (e.g., `diagram.json`) that describes pages, nodes, and connections.
-3. **Script Execution** – Run the PowerShell script:
-```powershell
-powershell -ExecutionPolicy Bypass -File "<skill_dir>/scripts/New-VisioDiagram.ps1" -SpecPath "diagram.json" -OutputPath "diagram.vsdx"
+3. **Script Execution** – Run the Python script:
+```bash
+python "<skill_dir>/scripts/New-VisioDiagram.py" "diagram.json" "diagram.vsdx"
 ```
 4. **Result Delivery** – Return the generated `.vsdx` (or a PNG/PDF preview) to the user.
 
@@ -95,13 +95,24 @@ After execution, verify that the `.vsdx` file exists and is non‑empty. If need
 
 ## Compatibility Note
 
-The skill relies on the Windows‑only Visio COM API; it will not run on macOS or Linux without a Windows VM or remote execution environment. In such cases, consider alternative formats like Mermaid, SVG, or draw.io.
-
----
+The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ with `pywin32` (`pip install pywin32`). It will not run on macOS or Linux without a Windows VM or remote execution environment. In such cases, consider alternative formats like Mermaid, SVG, or draw.io.
 
 ---
 
 ## Changelog
+
+### v3.0 - 2026-06-01
+**🔧 Engine Rewrite: PowerShell → Python**
+
+- 🐍 **Python drawing engine**: New `New-VisioDiagram.py` replaces PowerShell as default engine
+- 🔓 **Legacy stencils fully restored**: `NETSYM_M.VSSX`, `SERVER_M.VSSX`, `COMPS_M.VSSX` are now usable again (previously banned due to PowerShell COM threading deadlocks, misdiagnosed as "modal popup" issues)
+- 📋 **Stencil reference rewritten**: `stencil-reference.md` rebuilt from live COM enumeration — 100% accurate master names
+- 🐛 **Fixed example files**: Corrected non-existent master names in `network-topology-stencil.json`
+
+**Technical details**:
+- Root cause: PowerShell COM interop defaults to MTA threading, while Visio COM requires STA — batch operations deadlocked
+- Python `win32com.client` runs in STA by default, natively compatible with Visio COM, eliminating all deadlocks
+- Legacy `New-VisioDiagram.ps1` retained in `scripts/` for reference only
 
 ### v2.0 - 2026-05-28
 **🎉 New: Sequence Diagram Support**

@@ -34,7 +34,7 @@
         {
           "id": "firewall",
           "stencil": "network",
-          "master": "防火墙",
+          "master": "网关",
           "text": "边界防火墙",
           "x": 3.5,
           "y": 6.5,
@@ -113,8 +113,8 @@
         },
         {
           "id": "printer",
-          "stencil": "computer",
-          "master": "打印机",
+          "stencil": "server",
+          "master": "打印服务器",
           "text": "网络打印机",
           "x": 9,
           "y": 4.5,

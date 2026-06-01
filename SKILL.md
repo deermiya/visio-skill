@@ -9,8 +9,8 @@ description: Generate or modify Microsoft Visio .vsdx diagrams using local Visio
 
 Use local Microsoft Visio COM automation when Visio is installed and the user wants a real `.vsdx` file. Prefer the bundled script for new diagrams:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "<skill>/scripts/New-VisioDiagram.ps1" -SpecPath "<diagram.json>" -OutputPath "<diagram.vsdx>"
+```bash
+python "<skill>/scripts/New-VisioDiagram.py" "<diagram.json>" "<diagram.vsdx>"
 ```
 
 Create a JSON spec first, then run the script. Keep output files in the user's requested folder, or in the active workspace when unspecified.
@@ -44,10 +44,8 @@ Read `references/spec-format.md` for the full format. Minimum example:
 Coordinates are in Visio inches. `x` and `y` are the lower-left corner of the node; `w` and `h` are width and height.
 
 **Using Visio Stencil Icons**:
-> [!WARNING]
-> Do NOT use legacy network stencils like `NETSYM_M.VSSX`, `SERVER_M.VSSX`, or `COMPS_M.VSSX`. These old-era "smart shapes" contain hardcoded macros (`EventDrop`) that force modal popups (e.g., "Shape Data" dialogs) when dropped via COM automation. Because the process runs headlessly, these popups will permanently hang the execution thread. ALWAYS use styled basic shapes (like `rectangle`, `roundrect`, `ellipse`, `diamond`) instead of network stencils for background automation. If cloud stencils like `AZURECLOUD_M.VSSX` are available, they are safe to use, but basic shapes are the most robust fallback.
 
-If you must use modern, non-blocking stencils, declare them as follows:
+To use professional Visio stencil icons (network devices, servers, computers, etc.), declare them in the `stencils` array:
 
 ```json
 {
@@ -62,9 +60,11 @@ If you must use modern, non-blocking stencils, declare them as follows:
 }
 ```
 
-See `references/stencil-reference.md` for available stencils and master names. Common safe stencils:
-- `AZURECLOUD_M.VSSX`, `AWSCOMPUTE_M.VSSX` - Modern Cloud service icons (safe for automation)
-*(Note: Cisco, legacy network, and server stencils are strictly banned due to modal popups)*
+See `references/stencil-reference.md` for available stencils and master names. Common stencils:
+- `NETSYM_M.VSSX` - Network symbols (routers, switches, firewalls)
+- `SERVER_M.VSSX` - Servers and racks
+- `COMPS_M.VSSX` - Computers and monitors
+- `AZURECLOUD_M.VSSX`, `AWSCOMPUTE_M.VSSX` - Cloud service icons
 
 ### 2. Sequence Diagrams (UML interaction diagrams)
 
@@ -133,8 +133,9 @@ After generating a `.vsdx`, confirm the file exists and has nonzero size. If the
 
 If COM creation fails, check whether Visio is installed and registered:
 
-```powershell
-New-Object -ComObject Visio.Application
+```python
+import win32com.client
+win32com.client.Dispatch("Visio.Application")
 ```
 
 When Visio is unavailable, offer Mermaid, SVG, draw.io, or another importable format instead of pretending the `.vsdx` was created.

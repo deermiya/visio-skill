@@ -1,6 +1,6 @@
 # Visio Sequence Diagram JSON Spec
 
-Use this format with `scripts/New-VisioDiagram.ps1` to create UML-style sequence diagrams.
+Use this format with `scripts/New-VisioDiagram.py` to create UML-style sequence diagrams.
 
 ## Format Overview
 
