@@ -10,9 +10,11 @@
 
 - **原生 `.vsdx` 生成**：直接构建可编辑的 Microsoft Visio 图表文件，而非静态图片或普通的 SVG。
 - **JSON 驱动设计**：通过简单的 JSON Schema 声明页面（pages）、节点（nodes）和连线（connections）来生成图表。
+- **Visio 内置图标库支持**：支持使用 Visio 自带的专业 Stencil 模板（网络设备、服务器、云服务、Cisco/Azure/AWS 图标等），告别五花八门的自制图标。
 - **精准的坐标定位**：使用显式的英寸坐标（x, y, w, h），确保图表布局一致且符合预期。
 - **多场景图表支持**：支持绘制流程图、架构图、时序图、泳道图、网络拓扑图等多种常见图表。
 - **专业时序图支持**：内置 UML 时序图模式，自动绘制生命线、激活框和消息箭头，支持同步/异步/返回消息类型。
+- **混合使用基本形状与专业图标**：可在同一图表中混合使用基本几何形状和 Stencil 专业图标。
 
 ## 目录结构
 
@@ -20,6 +22,8 @@
 - `scripts/New-VisioDiagram.ps1` - 核心 PowerShell 脚本，负责与 Visio COM 对象交互并构建图表。
 - `references/spec-format.md` - 标准图表的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
 - `references/sequence-format.md` - 时序图的 JSON 规范文档，详述 actors、messages 和 layout 的格式要求。
+- `references/stencil-reference.md` - Visio Stencil 模板参考文档，列出常用的 Stencil 文件及其 Master 图标名称。
+- `examples/` - 示例 JSON 文件，包含各种类型的图表示例。
 - `agents/` - 针对特定 AI Agent 平台的专属配置、提示词（Prompt）或封装脚本。
 
 ## 环境要求

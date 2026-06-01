@@ -54,104 +54,149 @@ function Set-FontFamilyIfPresent {
     }
 }
 
-$script:StencilLookup = $null
+function Load-Stencils {
+    param($Visio, $StencilSpecs)
 
-function Resolve-StencilPath {
-    param($Visio, [string]$FileOrPath)
-    # 完整路径直接用
-    if (Test-Path -LiteralPath $FileOrPath) { return (Resolve-Path -LiteralPath $FileOrPath).Path }
+    $stencilMap = @{}
 
-    # 懒加载路径索引（首次扫描 VISIO CONTENT 建缓存，30天有效）
-    if ($null -eq $script:StencilLookup) {
-        $cacheFile = Join-Path $env:TEMP 'visio-stencil-paths.json'
-        $rebuild = $true
-        if (Test-Path -LiteralPath $cacheFile) {
-            $age = (Get-Date) - (Get-Item $cacheFile).LastWriteTime
-            if ($age.TotalDays -lt 30) {
-                try {
-                    $obj = Get-Content $cacheFile -Raw -Encoding UTF8 | ConvertFrom-Json
-                    $script:StencilLookup = @{}
-                    foreach ($p in $obj.PSObject.Properties) { $script:StencilLookup[$p.Name] = $p.Value }
-                    $rebuild = $false
-                } catch { $rebuild = $true }
-            }
+    if ($null -eq $StencilSpecs -or $StencilSpecs.Count -eq 0) {
+        return $stencilMap
+    }
+
+    $defaultStencilPath = "C:\Program Files\Microsoft Office\root\Office16\Visio Content\2052"
+
+    foreach ($spec in $StencilSpecs) {
+        $stencilId = [string]$spec.id
+        $fileName = [string]$spec.file
+
+        # Determine full path
+        if ([System.IO.Path]::IsPathRooted($fileName)) {
+            $fullPath = $fileName
+        } elseif (Test-Path $fileName) {
+            $fullPath = Resolve-Path $fileName
+        } else {
+            # Try default Visio stencil path
+            $fullPath = Join-Path $defaultStencilPath $fileName
         }
-        if ($rebuild) {
-            $content = Join-Path $Visio.Path 'VISIO CONTENT'
-            $script:StencilLookup = @{}
-            Get-ChildItem -Path $content -Recurse -File -ErrorAction SilentlyContinue |
-                Where-Object { $_.Extension -in '.vssx','.vss','.vssm' } |
-                ForEach-Object { $script:StencilLookup[$_.Name.ToUpperInvariant()] = $_.FullName }
-            $script:StencilLookup | ConvertTo-Json -Compress |
-                Set-Content -LiteralPath $cacheFile -Encoding UTF8
+
+        if (-not (Test-Path $fullPath)) {
+            Write-Warning "Stencil file not found: $fullPath"
+            continue
+        }
+
+        try {
+            # Open stencil (64 = visOpenRO + visOpenDocked)
+            $stencil = $Visio.Documents.OpenEx($fullPath, 64)
+            $stencilMap[$stencilId] = $stencil
+            Write-Verbose "Loaded stencil '$stencilId' from $fullPath"
+        } catch {
+            Write-Warning "Failed to load stencil '$stencilId': $_"
         }
     }
 
-    $key = (Split-Path -Leaf $FileOrPath).ToUpperInvariant()
-    if ($script:StencilLookup.ContainsKey($key)) { return $script:StencilLookup[$key] }
-    throw "Stencil '$FileOrPath' not found. Delete '$env:TEMP\visio-stencil-paths.json' to rebuild cache."
+    return $stencilMap
+}
+
+function Get-MasterFromStencil {
+    param($Stencil, [string]$MasterName)
+
+    try {
+        $master = $Stencil.Masters.Item($MasterName)
+        return $master
+    } catch {
+        # List available masters for debugging
+        $available = @()
+        $count = $Stencil.Masters.Count
+        for ($i = 1; $i -le [Math]::Min($count, 10); $i++) {
+            try {
+                $available += $Stencil.Masters.Item($i).Name
+            } catch {}
+        }
+        $availableList = $available -join ", "
+        throw "Master '$MasterName' not found in stencil '$($Stencil.Name)'. Available masters (first 10): $availableList"
+    }
 }
 
 function Add-Node {
-    param($Page, $Node, $StencilsById)
-
-    # 模具图标分支：声明了 stencil + master 时，从模具 Drop 真实图标，而不是画几何形状
-    if ($Node.stencil -and $Node.master) {
-        $stencilId = [string]$Node.stencil
-        if ($null -eq $StencilsById -or -not $StencilsById.ContainsKey($stencilId)) {
-            throw "Node references stencil '$stencilId' not declared in top-level 'stencils' array."
-        }
-        $stencilDoc = $StencilsById[$stencilId]
-        $masterName = [string]$Node.master
-        $master = $null
-        try { $master = $stencilDoc.Masters.ItemU($masterName) } catch { }   # 先按通用名(NameU)
-        if ($null -eq $master) { try { $master = $stencilDoc.Masters.Item($masterName) } catch { } } # 再按显示名(Name)
-        if ($null -eq $master) { throw "Master '$masterName' not found in stencil '$stencilId'." }
-        $shape = $Page.Drop($master, [double]$Node.x, [double]$Node.y)  # x,y 为图标中心点
-        if ($Node.text) { $shape.Text = [string]$Node.text }
-        if ($null -ne $Node.w) { $shape.CellsU("Width").ResultIU = [double]$Node.w }
-        if ($null -ne $Node.h) { $shape.CellsU("Height").ResultIU = [double]$Node.h }
-        return $shape
-    }
+    param($Page, $Node, $StencilMap)
 
     $x = [double]$Node.x
     $y = [double]$Node.y
-    $w = if ($null -ne $Node.w) { [double]$Node.w } else { 2.0 }
-    $h = if ($null -ne $Node.h) { [double]$Node.h } else { 0.8 }
-    $shapeKind = if ($Node.shape) { [string]$Node.shape } else { "roundrect" }
 
-    switch ($shapeKind.ToLowerInvariant()) {
-        "ellipse" {
-            $shape = $Page.DrawOval($x, $y, $x + $w, $y + $h)
+    # Check if node uses a stencil master
+    if ($Node.stencil -and $Node.master) {
+        $stencilId = [string]$Node.stencil
+        $masterName = [string]$Node.master
+
+        if (-not $StencilMap.ContainsKey($stencilId)) {
+            throw "Stencil '$stencilId' not found. Make sure it's declared in the stencils array."
         }
-        "diamond" {
-            [double[]]$points = @(
-                ($x + ($w / 2)), ($y + $h),
-                ($x + $w), ($y + ($h / 2)),
-                ($x + ($w / 2)), $y,
-                $x, ($y + ($h / 2)),
-                ($x + ($w / 2)), ($y + $h)
-            )
-            $shape = $Page.DrawPolyline($points, 0)
+
+        $stencil = $StencilMap[$stencilId]
+        $master = Get-MasterFromStencil $stencil $masterName
+
+        # Drop master onto page
+        # For stencil masters, we drop at the center position and optionally resize
+        $shape = $Page.Drop($master, $x, $y)
+
+        # Optionally resize if w and h are specified
+        if ($null -ne $Node.w) {
+            $shape.CellsU("Width").ResultIU = [double]$Node.w
         }
-        "roundrect" {
-            $shape = $Page.DrawRectangle($x, $y, $x + $w, $y + $h)
-            Set-FormulaIfPresent $shape "Rounding" "0.15 in"
+        if ($null -ne $Node.h) {
+            $shape.CellsU("Height").ResultIU = [double]$Node.h
         }
-        default {
-            $shape = $Page.DrawRectangle($x, $y, $x + $w, $y + $h)
+
+        # Adjust position to align with lower-left corner like basic shapes
+        # Stencil masters drop at center by default, so we need to adjust
+        $actualW = $shape.CellsU("Width").ResultIU
+        $actualH = $shape.CellsU("Height").ResultIU
+        $shape.CellsU("PinX").ResultIU = $x + ($actualW / 2)
+        $shape.CellsU("PinY").ResultIU = $y + ($actualH / 2)
+    }
+    else {
+        # Use basic shapes (original logic)
+        $w = if ($null -ne $Node.w) { [double]$Node.w } else { 2.0 }
+        $h = if ($null -ne $Node.h) { [double]$Node.h } else { 0.8 }
+        $shapeKind = if ($Node.shape) { [string]$Node.shape } else { "roundrect" }
+
+        switch ($shapeKind.ToLowerInvariant()) {
+            "ellipse" {
+                $shape = $Page.DrawOval($x, $y, $x + $w, $y + $h)
+            }
+            "diamond" {
+                [double[]]$points = @(
+                    ($x + ($w / 2)), ($y + $h),
+                    ($x + $w), ($y + ($h / 2)),
+                    ($x + ($w / 2)), $y,
+                    $x, ($y + ($h / 2)),
+                    ($x + ($w / 2)), ($y + $h)
+                )
+                $shape = $Page.DrawPolyline($points, 0)
+            }
+            "roundrect" {
+                $shape = $Page.DrawRectangle($x, $y, $x + $w, $y + $h)
+                Set-FormulaIfPresent $shape "Rounding" "0.15 in"
+            }
+            default {
+                $shape = $Page.DrawRectangle($x, $y, $x + $w, $y + $h)
+            }
         }
+
+        # Apply colors for basic shapes
+        $fillColor = if ($Node.fill) { [string]$Node.fill } else { "#EFF6FF" }
+        $lineColor = if ($Node.line) { [string]$Node.line } else { "#3B82F6" }
+        Set-FormulaIfPresent $shape "FillForegnd" (Convert-HexToRgbFormula $fillColor)
+        Set-FormulaIfPresent $shape "LineColor" (Convert-HexToRgbFormula $lineColor)
     }
 
+    # Apply text and font (works for both stencil and basic shapes)
     if ($Node.text) { $shape.Text = [string]$Node.text }
-    $fillColor = if ($Node.fill) { [string]$Node.fill } else { "#EFF6FF" }
-    $lineColor = if ($Node.line) { [string]$Node.line } else { "#3B82F6" }
-    Set-FormulaIfPresent $shape "FillForegnd" (Convert-HexToRgbFormula $fillColor)
-    Set-FormulaIfPresent $shape "LineColor" (Convert-HexToRgbFormula $lineColor)
     $fontName = if ($Node.fontName) { [string]$Node.fontName } else { "Microsoft YaHei" }
     $fontSize = if ($null -ne $Node.fontSize) { $Node.fontSize } else { 11 }
     Set-FontFamilyIfPresent $shape $fontName
     Set-FontSizeIfPresent $shape $fontSize
+
     return $shape
 }
 
@@ -314,6 +359,15 @@ try {
     $visio.Visible = [bool]$Visible
     $doc = $visio.Documents.Add("")
 
+    # Load stencils if specified
+    $stencilMap = @{}
+    if ($json.stencils) {
+        $stencilMap = Load-Stencils $visio $json.stencils
+        if ($Diagnostics) {
+            Write-Output "Loaded $($stencilMap.Count) stencil(s)."
+        }
+    }
+
     # Check if this is a sequence diagram
     $diagramType = if ($json.type) { [string]$json.type } else { "standard" }
 
@@ -335,14 +389,6 @@ try {
     }
     else {
         # Handle standard diagrams (original logic)
-        # 先打开 spec 里声明的所有模具：自动解析路径 + 隐藏只读方式加载(flag 66 = 只读2 + 隐藏64)
-        $stencilsById = @{}
-        foreach ($s in @($json.stencils)) {
-            if (-not $s.id) { throw "Every stencil entry must include an id." }
-            $stencilPath = Resolve-StencilPath $visio ([string]$s.file)
-            $stencilsById[[string]$s.id] = $visio.Documents.OpenEx($stencilPath, 66)
-            if ($Diagnostics) { Write-Output "Opened stencil '$($s.id)' -> $stencilPath" }
-        }
         if ($null -ne $json.pages) {
             [object[]]$pages = @($json.pages)
         }
@@ -362,7 +408,7 @@ try {
             $shapesById = @{}
             foreach ($node in @($pageSpec.nodes)) {
                 if (-not $node.id) { throw "Every node must include an id." }
-                $shapesById[[string]$node.id] = Add-Node $page $node $stencilsById
+                $shapesById[[string]$node.id] = Add-Node $page $node $stencilMap
             }
 
             foreach ($connection in @($pageSpec.connections)) {
@@ -379,6 +425,9 @@ try {
     Write-Output $resolvedOutput
 }
 finally {
-    if ($doc) { $doc.Close() }
+    if ($doc) { 
+        $doc.Saved = $true
+        $doc.Close() 
+    }
     if ($visio) { $visio.Quit() }
 }

@@ -1,0 +1,35 @@
+{
+  "title": "简单测试",
+  "stencils": [
+    {
+      "id": "network",
+      "file": "NETSYM_M.VSSX"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "router1",
+      "stencil": "network",
+      "master": "路由器",
+      "text": "测试路由器",
+      "x": 3,
+      "y": 5
+    },
+    {
+      "id": "box1",
+      "shape": "roundrect",
+      "text": "普通方框",
+      "x": 6,
+      "y": 5,
+      "w": 2,
+      "h": 0.8
+    }
+  ],
+  "connections": [
+    {
+      "from": "router1",
+      "to": "box1",
+      "text": "连接"
+    }
+  ]
+}

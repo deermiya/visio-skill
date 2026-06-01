@@ -1,0 +1,174 @@
+{
+  "title": "企业网络拓扑",
+  "pageWidth": 11,
+  "pageHeight": 8.5,
+  "stencils": [
+    {
+      "id": "network",
+      "file": "NETSYM_M.VSSX"
+    },
+    {
+      "id": "server",
+      "file": "SERVER_M.VSSX"
+    },
+    {
+      "id": "computer",
+      "file": "COMPS_M.VSSX"
+    }
+  ],
+  "pages": [
+    {
+      "name": "网络架构",
+      "nodes": [
+        {
+          "id": "internet",
+          "shape": "ellipse",
+          "text": "Internet",
+          "x": 1,
+          "y": 6.5,
+          "w": 1.5,
+          "h": 1,
+          "fill": "#ECFDF5",
+          "line": "#10B981"
+        },
+        {
+          "id": "firewall",
+          "stencil": "network",
+          "master": "防火墙",
+          "text": "边界防火墙",
+          "x": 3.5,
+          "y": 6.5,
+          "w": 1.2,
+          "h": 1
+        },
+        {
+          "id": "router",
+          "stencil": "network",
+          "master": "路由器",
+          "text": "核心路由器",
+          "x": 5.5,
+          "y": 6.5,
+          "w": 1.2,
+          "h": 1
+        },
+        {
+          "id": "switch1",
+          "stencil": "network",
+          "master": "工作组交换机",
+          "text": "楼层交换机A",
+          "x": 4,
+          "y": 4.5,
+          "w": 1.2,
+          "h": 1
+        },
+        {
+          "id": "switch2",
+          "stencil": "network",
+          "master": "工作组交换机",
+          "text": "楼层交换机B",
+          "x": 7,
+          "y": 4.5,
+          "w": 1.2,
+          "h": 1
+        },
+        {
+          "id": "webserver",
+          "stencil": "server",
+          "master": "Web 服务器",
+          "text": "Web服务器",
+          "x": 2.5,
+          "y": 2.5,
+          "w": 1.2,
+          "h": 1.2
+        },
+        {
+          "id": "dbserver",
+          "stencil": "server",
+          "master": "数据库服务器",
+          "text": "数据库",
+          "x": 5,
+          "y": 2.5,
+          "w": 1.2,
+          "h": 1.2
+        },
+        {
+          "id": "client1",
+          "stencil": "computer",
+          "master": "PC",
+          "text": "员工PC-01",
+          "x": 7.5,
+          "y": 2.8,
+          "w": 0.8,
+          "h": 0.8
+        },
+        {
+          "id": "client2",
+          "stencil": "computer",
+          "master": "笔记本电脑",
+          "text": "员工笔记本-02",
+          "x": 9,
+          "y": 2.8,
+          "w": 0.8,
+          "h": 0.8
+        },
+        {
+          "id": "printer",
+          "stencil": "computer",
+          "master": "打印机",
+          "text": "网络打印机",
+          "x": 9,
+          "y": 4.5,
+          "w": 0.8,
+          "h": 0.8
+        }
+      ],
+      "connections": [
+        {
+          "from": "internet",
+          "to": "firewall",
+          "text": "WAN"
+        },
+        {
+          "from": "firewall",
+          "to": "router",
+          "text": "DMZ"
+        },
+        {
+          "from": "router",
+          "to": "switch1",
+          "text": "Trunk"
+        },
+        {
+          "from": "router",
+          "to": "switch2",
+          "text": "Trunk"
+        },
+        {
+          "from": "switch1",
+          "to": "webserver",
+          "text": "1Gbps"
+        },
+        {
+          "from": "switch1",
+          "to": "dbserver",
+          "text": "1Gbps"
+        },
+        {
+          "from": "switch2",
+          "to": "client1",
+          "text": "LAN"
+        },
+        {
+          "from": "switch2",
+          "to": "client2",
+          "text": "Wi-Fi"
+        },
+        {
+          "from": "switch2",
+          "to": "printer",
+          "text": "LAN"
+        }
+      ]
+    }
+  ]
+}
