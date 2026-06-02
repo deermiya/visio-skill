@@ -1,0 +1,288 @@
+{
+  "title": "机房网络拓扑图（Azure扁平图标）",
+  "pageWidth": 11,
+  "pageHeight": 8.5,
+  "stencils": [
+    { "id": "azure_net", "file": "AZURENETWORKING_M.VSSX" },
+    { "id": "azure_compute", "file": "AZURECOMPUTE_M.VSSX" },
+    { "id": "azure_storage", "file": "AZURESTORAGE_M.VSSX" }
+  ],
+  "pages": [
+    {
+      "name": "Network Topology",
+      "nodes": [
+        {
+          "id": "internet",
+          "text": "互联网",
+          "shape": "ellipse",
+          "x": 5,
+          "y": 7.3,
+          "w": 1.6,
+          "h": 0.6,
+          "fill": "#E3F2FD",
+          "line": "#1976D2"
+        },
+        {
+          "id": "firewall",
+          "stencil": "azure_net",
+          "master": "网络安全组",
+          "text": "防火墙",
+          "x": 5,
+          "y": 6.1,
+          "w": 1.2,
+          "h": 1.2
+        },
+        {
+          "id": "core_lb",
+          "stencil": "azure_net",
+          "master": "负载平衡器",
+          "text": "核心负载均衡",
+          "x": 5,
+          "y": 4.7,
+          "w": 1.3,
+          "h": 1.3
+        },
+        {
+          "id": "agg_gateway_1",
+          "stencil": "azure_net",
+          "master": "虚拟网络网关",
+          "text": "汇聚网关 1",
+          "x": 2.8,
+          "y": 3.3,
+          "w": 1.2,
+          "h": 1.2
+        },
+        {
+          "id": "agg_gateway_2",
+          "stencil": "azure_net",
+          "master": "虚拟网络网关",
+          "text": "汇聚网关 2",
+          "x": 7.2,
+          "y": 3.3,
+          "w": 1.2,
+          "h": 1.2
+        },
+        {
+          "id": "access_nic_1",
+          "stencil": "azure_net",
+          "master": "网络接口",
+          "text": "接入 1",
+          "x": 1.2,
+          "y": 2.0,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "access_nic_2",
+          "stencil": "azure_net",
+          "master": "网络接口",
+          "text": "接入 2",
+          "x": 3.2,
+          "y": 2.0,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "access_nic_3",
+          "stencil": "azure_net",
+          "master": "网络接口",
+          "text": "接入 3",
+          "x": 6.8,
+          "y": 2.0,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "access_nic_4",
+          "stencil": "azure_net",
+          "master": "网络接口",
+          "text": "接入 4",
+          "x": 8.8,
+          "y": 2.0,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "web_label",
+          "text": "Web服务区",
+          "shape": "rectangle",
+          "x": 1.0,
+          "y": 1.05,
+          "w": 2.4,
+          "h": 0.25,
+          "fill": "#E8F5E9",
+          "line": "#2E7D32",
+          "fontSize": 8
+        },
+        {
+          "id": "web_vm_1",
+          "stencil": "azure_compute",
+          "master": "虚拟机",
+          "text": "Web-01",
+          "x": 0.8,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "web_vm_2",
+          "stencil": "azure_compute",
+          "master": "虚拟机",
+          "text": "Web-02",
+          "x": 2.2,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "app_label",
+          "text": "应用服务区",
+          "shape": "rectangle",
+          "x": 3.8,
+          "y": 1.05,
+          "w": 2.4,
+          "h": 0.25,
+          "fill": "#FFF3E0",
+          "line": "#E65100",
+          "fontSize": 8
+        },
+        {
+          "id": "app_vm_1",
+          "stencil": "azure_compute",
+          "master": "应用服务",
+          "text": "App-01",
+          "x": 3.8,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "app_vm_2",
+          "stencil": "azure_compute",
+          "master": "应用服务",
+          "text": "App-02",
+          "x": 5.2,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "data_label",
+          "text": "数据服务区",
+          "shape": "rectangle",
+          "x": 6.8,
+          "y": 1.05,
+          "w": 2.4,
+          "h": 0.25,
+          "fill": "#F3E5F5",
+          "line": "#6A1B9A",
+          "fontSize": 8
+        },
+        {
+          "id": "db_vm",
+          "stencil": "azure_compute",
+          "master": "虚拟机",
+          "text": "Database",
+          "x": 6.8,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        },
+        {
+          "id": "storage_account",
+          "stencil": "azure_storage",
+          "master": "存储帐户",
+          "text": "Storage",
+          "x": 8.2,
+          "y": 0.3,
+          "w": 1.0,
+          "h": 1.0
+        }
+      ],
+      "connections": [
+        {
+          "from": "internet",
+          "to": "firewall",
+          "lineWeight": "2 pt",
+          "lineColor": "#1976D2"
+        },
+        {
+          "from": "firewall",
+          "to": "core_lb",
+          "lineWeight": "2 pt",
+          "lineColor": "#C62828"
+        },
+        {
+          "from": "core_lb",
+          "to": "agg_gateway_1",
+          "lineWeight": "1.5 pt",
+          "lineColor": "#5E35B1"
+        },
+        {
+          "from": "core_lb",
+          "to": "agg_gateway_2",
+          "lineWeight": "1.5 pt",
+          "lineColor": "#5E35B1"
+        },
+        {
+          "from": "agg_gateway_1",
+          "to": "agg_gateway_2",
+          "text": "冗余链路",
+          "lineStyle": "dashed",
+          "lineWeight": "1 pt",
+          "lineColor": "#3F51B5"
+        },
+        {
+          "from": "agg_gateway_1",
+          "to": "access_nic_1",
+          "lineColor": "#3F51B5"
+        },
+        {
+          "from": "agg_gateway_1",
+          "to": "access_nic_2",
+          "lineColor": "#3F51B5"
+        },
+        {
+          "from": "agg_gateway_2",
+          "to": "access_nic_3",
+          "lineColor": "#3F51B5"
+        },
+        {
+          "from": "agg_gateway_2",
+          "to": "access_nic_4",
+          "lineColor": "#3F51B5"
+        },
+        {
+          "from": "access_nic_1",
+          "to": "web_vm_1",
+          "lineColor": "#388E3C"
+        },
+        {
+          "from": "access_nic_1",
+          "to": "web_vm_2",
+          "lineColor": "#388E3C"
+        },
+        {
+          "from": "access_nic_2",
+          "to": "app_vm_1",
+          "lineColor": "#F57C00"
+        },
+        {
+          "from": "access_nic_2",
+          "to": "app_vm_2",
+          "lineColor": "#F57C00"
+        },
+        {
+          "from": "access_nic_3",
+          "to": "db_vm",
+          "lineColor": "#7B1FA2"
+        },
+        {
+          "from": "access_nic_4",
+          "to": "storage_account",
+          "lineColor": "#7B1FA2"
+        }
+      ]
+    }
+  ]
+}

@@ -20,12 +20,11 @@
 
 - `SKILL.md` - Agent 的主指令文件，定义了 AI 的工作流、行为准则及图表绘制约束。
 - `scripts/New-VisioDiagram.py` - 核心 Python 脚本，负责与 Visio COM 对象交互并构建图表。
-- `scripts/New-VisioDiagram.ps1` - 旧版 PowerShell 脚本（已弃用，仅供参考）。
 - `references/spec-format.md` - 标准图表的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
 - `references/sequence-format.md` - 时序图的 JSON 规范文档，详述 actors、messages 和 layout 的格式要求。
 - `references/stencil-reference.md` - Visio Stencil 模板参考文档，列出常用的 Stencil 文件及其 Master 图标名称。
+- `references/visio-stencil-index.md` - Visio 自带图标库完整索引（362个模板库）。
 - `examples/` - 示例 JSON 文件，包含各种类型的图表示例。
-- `agents/` - 针对特定 AI Agent 平台的专属配置、提示词（Prompt）或封装脚本。
 
 ## 环境要求
 
@@ -112,18 +111,20 @@
 
 ## 更新日志
 
-### v3.0 - 2026-06-01
-**🔧 绘图引擎重构：PowerShell → Python**
+### v3.0 - 2026-06-02
+**🔧 绘图引擎优化与图标库完善**
 
-- 🐍 **Python 绘图引擎**：新增 `New-VisioDiagram.py`，替换原 PowerShell 脚本作为默认绘图引擎
-- 🔓 **Visio 传统模具全面解禁**：`NETSYM_M.VSSX`、`SERVER_M.VSSX`、`COMPS_M.VSSX` 等传统模具恢复可用（此前因 PowerShell COM 线程死锁被误判为"弹窗导致卡死"而禁用）
+- 📊 **完整图标索引**：新增 `visio-stencil-index.md`，扫描并索引全部 362 个 Visio 自带模板库
+- 🎯 **智能场景判断**：更新 SKILL 逻辑，流程图使用基础形状，网络拓扑图才调用专业图标
+- 🔓 **Visio 传统模具全面解禁**：`NETSYM_M.VSSX`、`SERVER_M.VSSX`、`COMPS_M.VSSX` 等传统模具恢复可用
 - 📋 **模具参考手册重写**：`stencil-reference.md` 基于实机 COM 枚举结果全面重写，master 名称 100% 准确
-- 🐛 **修正示例文件**：修正 `network-topology-stencil.json` 中不存在的 master 名称（防火墙→网关，打印机→打印服务器）
+- 🐛 **修正示例文件**：修正 `network-topology-stencil.json` 中不存在的 master 名称
+- 🧹 **项目文件清理**：删除临时测试文件和已弃用的脚本，统一示例文件到 examples 目录
 
 **技术细节**：
-- 根因：PowerShell 的 COM 互操作默认以 MTA 线程模型运行，而 Visio COM 要求 STA，批量操作时产生线程死锁
-- Python `win32com.client` 默认工作在 STA 模式，天然兼容 Visio COM，彻底消除死锁
-- 旧版 `New-VisioDiagram.ps1` 保留在 `scripts/` 目录，仅供参考
+- Python `win32com.client.gencache.EnsureDispatch` 确保稳定的 COM 早期绑定
+- 使用基础形状（roundrect、rectangle、ellipse）绘制流程图，避免不必要的 stencil 加载
+- 仅在用户明确要求"图标"、"网络设备"时才加载专业 stencil 模板
 
 ### v2.0 - 2026-05-28
 **🎉 新增：时序图支持**
@@ -136,7 +137,7 @@
 - 🎯 **示例文件**：提供 `example-sequence.json` 参考模板
 
 **技术细节**：
-- 扩展 `New-VisioDiagram.ps1` 脚本，新增 `Add-SequenceDiagram` 函数
+- 在 `New-VisioDiagram.py` 中实现 `add_sequence_diagram` 函数
 - 支持自定义布局参数（actorSpacing、messageSpacing、startY、lifelineHeight）
 - 兼容原有的标准图表绘制模式，通过 `type` 字段自动分支
 
@@ -150,4 +151,4 @@
 - ✅ 精准坐标定位：英寸级坐标控制（x, y, w, h）
 - ✅ 多页面支持：单个 .vsdx 文件包含多个页面
 - ✅ 自定义样式：支持颜色、字体、线型等完整配置
-- ✅ COM 自动化：PowerShell 脚本调用 Visio COM 接口
+- ✅ COM 自动化：Python 脚本调用 Visio COM 接口

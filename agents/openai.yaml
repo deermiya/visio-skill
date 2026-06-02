@@ -1,7 +1,0 @@
-interface:
-  display_name: "Visio VSDX"
-  short_description: "Create real Visio .vsdx diagrams"
-  default_prompt: "Use $visio-vsdx to create a Visio .vsdx diagram from my nodes, connections, and layout requirements."
-
-policy:
-  allow_implicit_invocation: true

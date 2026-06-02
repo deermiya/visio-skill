@@ -101,18 +101,20 @@ The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ w
 
 ## Changelog
 
-### v3.0 - 2026-06-01
-**🔧 Engine Rewrite: PowerShell → Python**
+### v3.0 - 2026-06-02
+**🔧 Engine Optimization & Icon Library Enhancement**
 
-- 🐍 **Python drawing engine**: New `New-VisioDiagram.py` replaces PowerShell as default engine
-- 🔓 **Legacy stencils fully restored**: `NETSYM_M.VSSX`, `SERVER_M.VSSX`, `COMPS_M.VSSX` are now usable again (previously banned due to PowerShell COM threading deadlocks, misdiagnosed as "modal popup" issues)
+- 📊 **Complete icon index**: New `visio-stencil-index.md` scans and indexes all 362 built-in Visio stencil libraries
+- 🎯 **Smart scenario detection**: Updated SKILL logic — flowcharts use basic shapes, network diagrams use professional icons
+- 🔓 **Legacy stencils fully restored**: `NETSYM_M.VSSX`, `SERVER_M.VSSX`, `COMPS_M.VSSX` are now usable again
 - 📋 **Stencil reference rewritten**: `stencil-reference.md` rebuilt from live COM enumeration — 100% accurate master names
 - 🐛 **Fixed example files**: Corrected non-existent master names in `network-topology-stencil.json`
+- 🧹 **Project cleanup**: Removed temporary test files and deprecated scripts, organized examples
 
 **Technical details**:
-- Root cause: PowerShell COM interop defaults to MTA threading, while Visio COM requires STA — batch operations deadlocked
-- Python `win32com.client` runs in STA by default, natively compatible with Visio COM, eliminating all deadlocks
-- Legacy `New-VisioDiagram.ps1` retained in `scripts/` for reference only
+- Python `win32com.client.gencache.EnsureDispatch` ensures stable COM early binding
+- Basic shapes (roundrect, rectangle, ellipse) for flowcharts, avoiding unnecessary stencil loading
+- Professional stencils loaded only when user explicitly requests "icons" or "network devices"
 
 ### v2.0 - 2026-05-28
 **🎉 New: Sequence Diagram Support**
@@ -125,7 +127,7 @@ The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ w
 - 🎯 **Example file**: Includes `example-sequence.json` reference template
 
 **Technical details**:
-- Extended `New-VisioDiagram.ps1` script with new `Add-SequenceDiagram` function
+- Implemented `add_sequence_diagram` function in `New-VisioDiagram.py`
 - Customizable layout parameters (actorSpacing, messageSpacing, startY, lifelineHeight)
 - Backward-compatible with standard diagram mode via `type` field detection
 
@@ -139,7 +141,7 @@ The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ w
 - ✅ Precise coordinate control: inch-level positioning (x, y, w, h)
 - ✅ Multi-page support: multiple pages in a single .vsdx file
 - ✅ Custom styling: full support for colors, fonts, line patterns, etc.
-- ✅ COM automation: PowerShell script invoking Visio COM interface
+- ✅ COM automation: Python script invoking Visio COM interface
 
 ---
 

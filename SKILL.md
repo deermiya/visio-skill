@@ -60,11 +60,14 @@ To use professional Visio stencil icons (network devices, servers, computers, et
 }
 ```
 
-See `references/stencil-reference.md` for available stencils and master names. Common stencils:
-- `NETSYM_M.VSSX` - Network symbols (routers, switches, firewalls)
-- `SERVER_M.VSSX` - Servers and racks
-- `COMPS_M.VSSX` - Computers and monitors
-- `AZURECLOUD_M.VSSX`, `AWSCOMPUTE_M.VSSX` - Cloud service icons
+**Finding stencil icons**:
+- **Quick reference** (recommended): `references/stencil-reference.md` — Common network/server/computer stencils with verified master names
+- **Full catalog**: `references/visio-stencil-index.md` — All 362 built-in Visio stencils
+
+Most commonly used stencils:
+- `NETSYM_M.VSSX` (24 masters) - Network symbols (路由器, 工作组交换机, 网桥, 网关)
+- `SERVER_M.VSSX` (17 masters) - Servers (Web 服务器, 数据库服务器, 应用程序服务器)
+- `COMPS_M.VSSX` (10 masters) - Computers and monitors (PC, 笔记本电脑, 平板电脑)
 
 ### 2. Sequence Diagrams (UML interaction diagrams)
 
@@ -97,11 +100,29 @@ Read `references/sequence-format.md` for the full specification. Minimum example
 
 ## Drawing Guidance
 
+### When to Use Stencil Icons vs Basic Shapes
+
+**Use BASIC SHAPES ONLY (no stencils) for:**
+- ✅ Flowcharts / 流程图
+- ✅ Process diagrams / 过程图
+- ✅ Decision trees / 决策树
+- ✅ BPMN diagrams / 业务流程图
+- ✅ State machines / 状态机
+- ✅ Mind maps / 思维导图
+- ✅ Org charts / 组织结构图
+
+**Use STENCIL ICONS (when user explicitly mentions "icons" or specific devices) for:**
+- 🔧 Network topology / 网络拓扑图 (routers, switches, firewalls)
+- 🔧 Infrastructure diagrams / 基础设施图 (servers, storage, devices)
+- 🔧 Cloud architecture / 云架构图 (Azure, AWS services)
+- 🔧 Data center layout / 机房布局图
+
+**Default behavior**: Unless the user explicitly asks for "icons", "professional icons", "network devices", or "cloud services", use basic shapes only.
+
 ### Standard Diagrams
 
 - Use explicit coordinates for predictable layout.
 - Keep diagrams readable: align nodes in rows/columns, leave at least `0.6` to `1.0` inches between shapes, and route left-to-right or top-to-bottom unless the user asks otherwise.
-- **When to use Stencils**: For network topology, infrastructure diagrams, cloud architecture, use Visio stencil masters instead of basic shapes. For flowcharts and process diagrams, basic shapes are usually sufficient.
 - Default shape is `roundrect` (rounded rectangle). Default fill is a premium light blue `#EFF6FF` with a border of `#3B82F6`. Default node text is `Microsoft YaHei` at `11 pt`.
 - Default connector line color is slate gray `#475569` with `10 pt` text, automatically using `"textPinX": 0.35` and `"textOffsetY": 0.18` to avoid overlap.
 - Utilize premium, low-saturation pastel colors for different layers/roles (e.g., `#EFF6FF` / `#3B82F6` for main logic, `#ECFDF5` / `#10B981` for start/success, `#FEF3C7` / `#D97706` for storage, `#F5F3FF` / `#8B5CF6` for external API).

@@ -289,8 +289,18 @@ def main():
     visio = None
     doc = None
     try:
-        visio = win32com.client.Dispatch("Visio.Application")
-        visio.Visible = bool(args.visible)
+        # Use EnsureDispatch for better COM support
+        try:
+            visio = win32com.client.gencache.EnsureDispatch("Visio.Application")
+        except:
+            visio = win32com.client.Dispatch("Visio.Application")
+
+        # Set visibility using integer (more compatible)
+        try:
+            visio.Visible = 0 if not args.visible else -1
+        except:
+            pass  # Some COM configurations don't support setting Visible
+
         doc = visio.Documents.Add("")
 
         # Load stencils
