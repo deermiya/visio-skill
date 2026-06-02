@@ -28,6 +28,19 @@ python "<skill>/scripts/verilog_to_visio.py" "<verilog-dir-or-top.v>" "<output.v
 
 Read `references/rtl-verilog.md` for the supported role inference and layout rules. The generator intentionally summarizes global clock and reset fanout to keep the module-level diagram readable. Use the generated JSON only as a fallback customization point for unusual designs.
 
+### Reconstruct Editable Visio from an Image
+
+When the user provides a non-editable PNG, JPG, screenshot, scanned flowchart, architecture diagram, timeline, table, or Gantt chart and wants an editable Visio reconstruction, use:
+
+```bash
+python "<skill>/scripts/image_to_visio.py" "<input.png>" "<output.vsdx>" \
+  --mode auto \
+  --json "<output.json>" \
+  --preview "<preview.png>"
+```
+
+Read `references/image-reconstruction.md` for the complete workflow. The local parser extracts shapes, bars, sampled colors, and line geometry. OCR is optional. For text-heavy or visually complex diagrams, inspect the user image and pass a small `--annotations` JSON overlay to correct labels and semantic connections without rebuilding the whole page manually.
+
 ## JSON Spec
 
 This skill supports two diagram types:

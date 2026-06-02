@@ -1,0 +1,30 @@
+{
+  "title": "UART Data Acquisition System",
+  "replaceNodes": true,
+  "replaceLines": true,
+  "replaceLabels": true,
+  "nodes": [
+    { "id": "clk", "text": "CLK_DIVIDER\n50MHz -> 1MHz", "shape": "rectangle", "x": 1.7, "y": 7.4, "w": 2.0, "h": 0.85, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "key", "text": "KEY_DEBOUNCE\n4-channel debounce", "shape": "rectangle", "x": 2.0, "y": 1.7, "w": 2.2, "h": 0.9, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "rx", "text": "UART_RX\n9600 baud RX FSM", "shape": "rectangle", "x": 3.2, "y": 4.3, "w": 2.1, "h": 1.0, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "ctrl", "text": "FIFO_CTRL\nread/write coordinator", "shape": "rectangle", "x": 6.4, "y": 6.3, "w": 2.3, "h": 0.95, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "fifo", "text": "ASYNC_FIFO\n8-bit x 16-depth buffer", "shape": "rectangle", "x": 6.4, "y": 4.15, "w": 2.5, "h": 1.15, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "tx", "text": "UART_TX\n9600 baud TX FSM", "shape": "rectangle", "x": 10.3, "y": 4.3, "w": 2.1, "h": 1.0, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 },
+    { "id": "led", "text": "LED_INDICATOR\nRX / TX / FULL / EMPTY", "shape": "rectangle", "x": 10.0, "y": 1.45, "w": 2.9, "h": 0.95, "fill": "#E5E7EB", "line": "#111827", "fontName": "Consolas", "fontSize": 10 }
+  ],
+  "lines": [
+    { "x1": 0.3, "y1": 4.8, "x2": 3.2, "y2": 4.8, "line": "#111827", "endArrow": 4 },
+    { "x1": 5.3, "y1": 4.8, "x2": 6.4, "y2": 4.8, "line": "#2563EB", "lineWeight": 2.2, "text": "rx_data[7:0]" },
+    { "x1": 8.9, "y1": 4.8, "x2": 10.3, "y2": 4.8, "line": "#2563EB", "lineWeight": 2.2, "text": "fifo_dout[7:0]" },
+    { "x1": 12.4, "y1": 4.8, "x2": 15.1, "y2": 4.8, "line": "#111827", "endArrow": 4 },
+    { "x1": 5.3, "y1": 5.05, "x2": 6.4, "y2": 6.75, "line": "#F97316", "endArrow": 4, "text": "rx_done" },
+    { "x1": 7.55, "y1": 6.3, "x2": 7.55, "y2": 5.3, "line": "#F97316", "endArrow": 4, "text": "wr_en / rd_en" },
+    { "x1": 8.7, "y1": 6.75, "x2": 10.3, "y2": 5.05, "line": "#F97316", "endArrow": 4, "text": "tx_start" },
+    { "x1": 12.9, "y1": 1.93, "x2": 15.1, "y2": 1.93, "line": "#111827", "endArrow": 4 }
+  ],
+  "labels": [
+    { "text": "uart_rxd", "x": 0.3, "y": 4.98, "w": 0.9, "h": 0.25, "fontName": "Consolas", "fontSize": 9 },
+    { "text": "uart_txd", "x": 14.2, "y": 4.98, "w": 0.8, "h": 0.25, "fontName": "Consolas", "fontSize": 9 },
+    { "text": "led_out[7:0]", "x": 14.0, "y": 2.08, "w": 1.0, "h": 0.25, "fontName": "Consolas", "fontSize": 9 }
+  ]
+}

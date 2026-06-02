@@ -15,12 +15,17 @@
 - **多场景图表支持**：支持绘制流程图、架构图、时序图、泳道图、网络拓扑图等多种常见图表。
 - **专业时序图支持**：内置 UML 时序图模式，自动绘制生命线、激活框和消息箭头，支持同步/异步/返回消息类型。
 - **混合使用基本形状与专业图标**：可在同一图表中混合使用基本几何形状和 Stencil 专业图标。
+- **图片反推可编辑 Visio**：支持从 PNG、JPG、截图或扫描图中提取形状、连线、表格网格和甘特条，并复刻为可编辑的 `.vsdx`。
+- **Agent 辅助复刻**：复杂图片可使用少量 `--annotations` JSON 覆盖自动检测结果，补充准确文字和语义连接，无需手工重画整张图。
+- **自由线与独立标签**：新增原生 Visio 自由线段和独立文本框，适合复刻流程图、甘特图、时间轴和表格。
 
 ## 目录结构
 
 - `SKILL.md` - Agent 的主指令文件，定义了 AI 的工作流、行为准则及图表绘制约束。
 - `scripts/New-VisioDiagram.py` - 核心 Python 脚本，负责与 Visio COM 对象交互并构建图表。
+- `scripts/image_to_visio.py` - 图片反推脚本，使用 OpenCV 从静态图中提取可编辑的 Visio 元素。
 - `references/spec-format.md` - 标准图表的 JSON 规范文档，详述节点和连线的数据结构及格式要求。
+- `references/image-reconstruction.md` - 图片复刻工作流文档，包含自动检测和 Agent 辅助覆盖模式。
 - `references/sequence-format.md` - 时序图的 JSON 规范文档，详述 actors、messages 和 layout 的格式要求。
 - `references/stencil-reference.md` - Visio Stencil 模板参考文档，列出常用的 Stencil 文件及其 Master 图标名称。
 - `references/visio-stencil-index.md` - Visio 自带图标库完整索引（362个模板库）。
@@ -31,6 +36,8 @@
 - **Windows 操作系统**
 - 本地已安装 **Microsoft Visio**，且能够正常调用 COM 接口。
 - **Python 3.10+** 及 `pywin32` 包（`pip install pywin32`）
+- 如需使用图片反推功能：安装 `opencv-python`、`numpy`（`pip install opencv-python numpy`）
+- 如需自动 OCR：可选安装 `pytesseract` 和本地 Tesseract Runtime；未安装时仍可通过 Agent 辅助覆盖模式完成文字复刻
 
 *(如需验证 Visio COM 接口是否可用，可在 Python 中运行：`import win32com.client; win32com.client.Dispatch("Visio.Application")`)*
 
@@ -46,6 +53,8 @@
 - *”@visio-skill 请帮我画一个电商系统的架构图，包含 Web 端、API 网关、订单服务、库存服务和数据库。”*
 - *”用 Visio 画一个用户登录的流程图，要求横向排列。”*
 - *”画一个用户认证的时序图，包含 User、Web App、Auth Service 和 Database 四个参与者。”*
+- *”把这张不能编辑的流程图图片复刻成 Visio，保持布局并让我可以继续修改。”*
+- *”根据这张项目甘特图截图，生成可编辑的 Visio 版本。”*
 
 **背后发生了什么？**
 1. AI 识别触发意图后，会主动阅读本目录下的 `SKILL.md` 指令。
@@ -61,6 +70,25 @@
    ```bash
    python "<skill目录>/scripts/New-VisioDiagram.py" "diagram.json" "diagram.vsdx"
    ```
+
+### 图片反推 Visio
+
+对于用户提供的静态图片、截图或扫描图，优先调用图片复刻脚本：
+
+```bash
+python "<skill目录>/scripts/image_to_visio.py" "input.png" "output.vsdx" \
+  --mode auto \
+  --json "output.json" \
+  --preview "preview.png"
+```
+
+脚本会自动检测矩形、椭圆、菱形、自由线、表格网格和甘特条。对于文字较多或结构复杂的图片，Agent 可以根据视觉理解生成少量修正配置：
+
+```bash
+python "<skill目录>/scripts/image_to_visio.py" "input.png" "output.vsdx" \
+  --annotations "overlay.json" \
+  --preview "preview.png"
+```
 
 ## JSON 示例
 
@@ -110,6 +138,24 @@
 ---
 
 ## 更新日志
+
+### v4.0 - 2026-06-02
+**🖼️ 新增：图片反推可编辑 Visio**
+
+- 🔍 **静态图片几何解析**：新增 `image_to_visio.py`，使用 OpenCV 从 PNG、JPG、截图和扫描图中提取图形元素
+- 🧩 **多类型图表复刻**：支持流程图、逻辑框图、架构图、时间轴、表格和甘特图
+- 📐 **自动形状检测**：识别矩形、椭圆、菱形、任务条、网格线以及普通水平或垂直线段
+- 🧠 **Agent 辅助覆盖模式**：通过 `--annotations` 补充文字、语义连接或替换误检元素
+- 📝 **可选 OCR 支持**：安装 `pytesseract` 和 Tesseract Runtime 后可自动提取文字；未安装时仍可完成几何复刻
+- 🛠️ **Visio 原生对象增强**：新增自由线段 `lines` 和独立文本框 `labels`，复刻结果可继续编辑
+- 🎯 **智能模式判断**：`--mode auto` 自动区分普通图和网格密集型甘特图
+- 📄 **完整文档与示例**：新增 `references/image-reconstruction.md` 和 `examples/image-reconstruction-overlay.json`
+
+**技术细节**：
+- OpenCV 轮廓检测用于提取形状和采样原图颜色
+- Hough 线检测、边框去重和多轮线段合并用于提取有效连线
+- 支持 `replaceNodes`、`replaceLines`、`replaceLabels` 控制自动结果与 Agent 修正结果的合并方式
+- 原有 JSON 生成、时序图和 Stencil 图标路径保持向后兼容
 
 ### v3.0 - 2026-06-02
 **🔧 绘图引擎优化与图标库完善**

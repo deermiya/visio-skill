@@ -157,6 +157,24 @@ Optional connector refinements:
 - `textOffsetX`: move the connector label horizontally in inches.
 - `lineWeight`: set connector thickness in points. Use a heavier line for data buses.
 
+## Free Lines and Labels
+
+Image reconstructions and Gantt charts can use independent page-level lines and labels:
+
+```json
+{
+  "lines": [
+    { "x1": 1, "y1": 4, "x2": 8, "y2": 4, "line": "#475569", "lineWeight": 0.8 },
+    { "x1": 2, "y1": 6, "x2": 4, "y2": 6, "endArrow": 4, "text": "next" }
+  ],
+  "labels": [
+    { "text": "Phase 1", "x": 1, "y": 7, "w": 1.2, "h": 0.3, "fontSize": 10 }
+  ]
+}
+```
+
+Free lines are native Visio line objects. Labels are independent transparent-looking rectangle shapes so users can edit and move the text after generation.
+
 ## Notes
 
 - Use hex colors as `#RRGGBB`.

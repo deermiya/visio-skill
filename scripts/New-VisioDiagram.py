@@ -213,6 +213,45 @@ def add_connection(visio, page, shapes_by_id: dict, conn: dict):
     connector.CellsU("EndArrow").ResultIU = end_arrow
 
 
+def add_line(page, line: dict):
+    shape = page.DrawLine(
+        float(line["x1"]),
+        float(line["y1"]),
+        float(line["x2"]),
+        float(line["y2"]),
+    )
+    set_formula(shape, "LineColor", hex_to_rgb_formula(line.get("line", "#475569")))
+    if line.get("lineWeight") is not None:
+        shape.CellsU("LineWeight").FormulaU = f"{float(line['lineWeight'])} pt"
+    if line.get("dash"):
+        shape.CellsU("LinePattern").ResultIU = int(line["dash"])
+    if line.get("endArrow"):
+        shape.CellsU("EndArrow").ResultIU = int(line["endArrow"])
+    if line.get("beginArrow"):
+        shape.CellsU("BeginArrow").ResultIU = int(line["beginArrow"])
+    if line.get("text"):
+        shape.Text = str(line["text"])
+        set_font_family(shape, line.get("fontName", "Microsoft YaHei"))
+        set_font_size(shape, line.get("fontSize", 9))
+        shape.CellsU("TxtPinX").FormulaU = "Width*0.5"
+        shape.CellsU("TxtPinY").FormulaU = f"Height*0.5+{float(line.get('textOffsetY', 0.12))} in"
+    return shape
+
+
+def add_label(page, label: dict):
+    x = float(label["x"])
+    y = float(label["y"])
+    w = float(label.get("w", 1.5))
+    h = float(label.get("h", 0.3))
+    shape = page.DrawRectangle(x, y, x + w, y + h)
+    shape.Text = str(label.get("text", ""))
+    set_formula(shape, "FillForegnd", hex_to_rgb_formula(label.get("fill", "#FFFFFF")))
+    set_formula(shape, "LineColor", hex_to_rgb_formula(label.get("line", "#FFFFFF")))
+    set_font_family(shape, label.get("fontName", "Microsoft YaHei"))
+    set_font_size(shape, label.get("fontSize", 10))
+    return shape
+
+
 # ── Sequence diagram ──────────────────────────────────────────
 
 ACTOR_TYPE_COLORS = {
@@ -411,6 +450,12 @@ def main():
 
                 for conn in page_spec.get("connections", []):
                     add_connection(visio, page, shapes_by_id, conn)
+
+                for line in page_spec.get("lines", []):
+                    add_line(page, line)
+
+                for label in page_spec.get("labels", []):
+                    add_label(page, label)
 
                 if args.diagnostics:
                     print(f"Page '{page.Name}': {page.Shapes.Count} shapes.")

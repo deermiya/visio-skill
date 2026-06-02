@@ -4,6 +4,8 @@
 
 The **Visio Skill** automatically generates or modifies Microsoft Visio `.vsdx` diagrams using local Visio COM automation. It is designed for Windows environments where Microsoft Visio is installed. Users only need to describe the desired diagram in natural language; the skill handles JSON spec creation and Python script execution behind the scenes.
 
+Version 4.0 also reconstructs editable Visio diagrams from static PNG/JPG images, screenshots, and scans. The local OpenCV parser extracts shapes, lines, table grids, and Gantt bars. For complex images, the agent can add a small annotation overlay instead of redrawing the entire page.
+
 ---
 
 ## Installation
@@ -20,6 +22,8 @@ From any AI‑enabled tool that supports skills (Cursor, Antigravity, etc.), sim
 - `@visio-skill Please draw an e‑commerce architecture diagram with Web Frontend, API Gateway, Order Service, Inventory Service, and Database.`
 - `Create a user‑login flowchart in Visio, arranged horizontally.`
 - `Draw a sequence diagram for user authentication with User, Web App, Auth Service, and Database.`
+- `Reconstruct this non-editable flowchart image as an editable Visio diagram.`
+- `Convert this project Gantt chart screenshot into an editable Visio file.`
 
 The agent will automatically: 
 1. Parse the request.
@@ -37,6 +41,25 @@ The agent will automatically:
 python "<skill_dir>/scripts/New-VisioDiagram.py" "diagram.json" "diagram.vsdx"
 ```
 4. **Result Delivery** – Return the generated `.vsdx` (or a PNG/PDF preview) to the user.
+
+### Reconstructing Visio from an Image
+
+For a static image, screenshot, or scanned diagram, use:
+
+```bash
+python "<skill_dir>/scripts/image_to_visio.py" "input.png" "output.vsdx" \
+  --mode auto \
+  --json "output.json" \
+  --preview "preview.png"
+```
+
+The parser detects rectangles, ellipses, diamonds, free lines, table grids, and Gantt bars. For text-heavy or visually complex diagrams, the agent can provide a small annotation overlay:
+
+```bash
+python "<skill_dir>/scripts/image_to_visio.py" "input.png" "output.vsdx" \
+  --annotations "overlay.json" \
+  --preview "preview.png"
+```
 
 ---
 
@@ -95,11 +118,31 @@ After execution, verify that the `.vsdx` file exists and is non‑empty. If need
 
 ## Compatibility Note
 
-The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ with `pywin32` (`pip install pywin32`). It will not run on macOS or Linux without a Windows VM or remote execution environment. In such cases, consider alternative formats like Mermaid, SVG, or draw.io.
+The skill relies on the Windows‑only Visio COM API and requires Python 3.10+ with `pywin32` (`pip install pywin32`). Image reconstruction additionally requires `opencv-python` and `numpy` (`pip install opencv-python numpy`). OCR is optional: install `pytesseract` and a local Tesseract runtime when automatic text extraction is needed. Without OCR, the agent-assisted overlay mode can still reconstruct labels.
+
+The skill will not run on macOS or Linux without a Windows VM or remote execution environment. In such cases, consider alternative formats like Mermaid, SVG, or draw.io.
 
 ---
 
 ## Changelog
+
+### v4.0 - 2026-06-02
+**🖼️ New: Editable Visio Reconstruction from Images**
+
+- 🔍 **Static image geometry parsing**: Added `image_to_visio.py`, using OpenCV to extract diagram elements from PNG, JPG, screenshots, and scans
+- 🧩 **Multiple diagram types**: Supports flowcharts, logic block diagrams, architecture diagrams, timelines, tables, and Gantt charts
+- 📐 **Automatic shape detection**: Recognizes rectangles, ellipses, diamonds, task bars, grid lines, and regular horizontal or vertical lines
+- 🧠 **Agent-assisted overlays**: Use `--annotations` to add labels, semantic connections, or replacements for incorrectly detected elements
+- 📝 **Optional OCR support**: Automatically extracts text when `pytesseract` and the Tesseract runtime are installed; geometry reconstruction still works without OCR
+- 🛠️ **Native Visio object enhancements**: Added free `lines` and independent `labels`, keeping reconstructed elements editable
+- 🎯 **Smart mode inference**: `--mode auto` distinguishes regular diagrams from grid-heavy Gantt charts
+- 📄 **Documentation and example**: Added `references/image-reconstruction.md` and `examples/image-reconstruction-overlay.json`
+
+**Technical details**:
+- OpenCV contour detection extracts shapes and samples source colors
+- Hough line detection, border deduplication, and iterative line merging retain meaningful connectors
+- `replaceNodes`, `replaceLines`, and `replaceLabels` control how automatic results combine with agent corrections
+- Existing JSON rendering, sequence diagrams, and stencil-based diagrams remain backward compatible
 
 ### v3.0 - 2026-06-02
 **🔧 Engine Optimization & Icon Library Enhancement**
