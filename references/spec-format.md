@@ -152,6 +152,11 @@ To use professional icons from Visio stencils:
 
 Connection labels default to `Microsoft YaHei` and `10 pt`. Connection line defaults to `#475569` (slate gray). `textPinX` is the label position along the connector width (`0.35` keeps it away from the arrowhead). `textOffsetY` moves the label above the line in inches.
 
+Optional connector refinements:
+
+- `textOffsetX`: move the connector label horizontally in inches.
+- `lineWeight`: set connector thickness in points. Use a heavier line for data buses.
+
 ## Notes
 
 - Use hex colors as `#RRGGBB`.

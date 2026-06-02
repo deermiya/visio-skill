@@ -15,6 +15,19 @@ python "<skill>/scripts/New-VisioDiagram.py" "<diagram.json>" "<diagram.vsdx>"
 
 Create a JSON spec first, then run the script. Keep output files in the user's requested folder, or in the active workspace when unspecified.
 
+### RTL / Verilog Logic Block Diagrams
+
+When the user provides Verilog sources or asks for an FPGA / RTL logic block diagram, prefer the deterministic RTL generator instead of manually writing a JSON layout:
+
+```bash
+python "<skill>/scripts/verilog_to_visio.py" "<verilog-dir-or-top.v>" "<output.vsdx>" \
+  --top top_module \
+  --json "<output.json>" \
+  --preview "<preview.png>"
+```
+
+Read `references/rtl-verilog.md` for the supported role inference and layout rules. The generator intentionally summarizes global clock and reset fanout to keep the module-level diagram readable. Use the generated JSON only as a fallback customization point for unusual designs.
+
 ## JSON Spec
 
 This skill supports two diagram types:

@@ -1,0 +1,158 @@
+{
+  "title": "逻辑框图示例（UART_DPRAM风格）",
+  "pageWidth": 14,
+  "pageHeight": 8.5,
+  "layout": {
+    "engine": "hierarchical",
+    "direction": "LR",
+    "layerSpacing": 3.5,
+    "spacing": {
+      "horizontal": 1.2,
+      "vertical": 0.5
+    }
+  },
+  "pages": [{
+    "name": "UART_DPRAM",
+    "nodes": [
+      {
+        "id": "key_filter",
+        "text": "Key_filter",
+        "shape": "rectangle",
+        "layer": 0,
+        "w": 1.4,
+        "h": 1.2,
+        "fill": "#D9D9D9",
+        "line": "#000000",
+        "fontSize": 10,
+        "fontName": "Arial"
+      },
+      {
+        "id": "uart_rx",
+        "text": "UART_Byte_Rx",
+        "shape": "rectangle",
+        "layer": 0,
+        "w": 1.4,
+        "h": 1.2,
+        "fill": "#D9D9D9",
+        "line": "#000000",
+        "fontSize": 10,
+        "fontName": "Arial"
+      },
+      {
+        "id": "ctrl",
+        "text": "CTRL",
+        "shape": "rectangle",
+        "layer": 1,
+        "w": 1.8,
+        "h": 1.5,
+        "fill": "#D9D9D9",
+        "line": "#000000",
+        "fontSize": 10,
+        "fontName": "Arial"
+      },
+      {
+        "id": "dpram",
+        "text": "dpram",
+        "shape": "rectangle",
+        "layer": 2,
+        "w": 1.8,
+        "h": 1.5,
+        "fill": "#D9D9D9",
+        "line": "#000000",
+        "fontSize": 10,
+        "fontName": "Arial"
+      },
+      {
+        "id": "uart_tx",
+        "text": "UART_Byte_Tx",
+        "shape": "rectangle",
+        "layer": 3,
+        "w": 1.4,
+        "h": 1.2,
+        "fill": "#D9D9D9",
+        "line": "#000000",
+        "fontSize": 10,
+        "fontName": "Arial"
+      }
+    ],
+    "connections": [
+      {
+        "from": "key_filter",
+        "to": "ctrl",
+        "text": "Rst_n",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "key_filter",
+        "to": "ctrl",
+        "text": "Key_flag",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "uart_rx",
+        "to": "ctrl",
+        "text": "Rx_Done",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "ctrl",
+        "to": "dpram",
+        "text": "wren",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "ctrl",
+        "to": "dpram",
+        "text": "wraddress[7:0]",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "dpram",
+        "to": "uart_tx",
+        "text": "rx_data[7:0]",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      },
+      {
+        "from": "uart_tx",
+        "to": "dpram",
+        "text": "Tx_Done",
+        "line": "#000000",
+        "fontSize": 8,
+        "fontName": "Arial",
+        "textPinX": 0.5,
+        "textOffsetY": 0.12,
+        "endArrow": 4
+      }
+    ]
+  }]
+}

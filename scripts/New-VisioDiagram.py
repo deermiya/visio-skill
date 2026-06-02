@@ -4,6 +4,8 @@ Replaces PowerShell version to avoid STA/MTA COM threading deadlocks.
 
 Usage:
     python New-VisioDiagram.py <spec.json> <output.vsdx> [--visible] [--diagnostics]
+
+Version: 2.0 (with auto-layout engine)
 """
 
 import argparse
@@ -12,6 +14,15 @@ import os
 import sys
 
 import win32com.client
+
+# Import layout engine modules
+try:
+    from layout_engine import auto_layout, validate_spec
+    from collision_detector import detect_collisions
+    LAYOUT_ENGINE_AVAILABLE = True
+except ImportError:
+    LAYOUT_ENGINE_AVAILABLE = False
+    print("WARNING: Layout engine not available. Using manual layout only.", file=sys.stderr)
 
 
 # ── Color helpers ──────────────────────────────────────────────
@@ -153,6 +164,21 @@ def add_node(page, node: dict, stencil_map: dict):
         shape.Text = str(node["text"])
     set_font_family(shape, node.get("fontName", "Microsoft YaHei"))
     set_font_size(shape, node.get("fontSize", 11))
+
+    # ★ NEW: Handle z-order
+    if node.get("sendToBack") or node.get("zOrder") == 0:
+        try:
+            shape.SendToBack()
+        except:
+            pass  # Some shapes may not support SendToBack
+
+    # ★ NEW: Handle transparency (for background containers)
+    if node.get("fillOpacity") is not None:
+        try:
+            shape.CellsU("FillForegndTrans").ResultIU = 1.0 - float(node["fillOpacity"])
+        except:
+            pass
+
     return shape
 
 
@@ -178,8 +204,11 @@ def add_connection(visio, page, shapes_by_id: dict, conn: dict):
 
     tpx = float(conn.get("textPinX", 0.35))
     toy = float(conn.get("textOffsetY", 0.18))
-    connector.CellsU("TxtPinX").FormulaU = f"Width*{tpx}"
+    tox = float(conn.get("textOffsetX", 0))
+    connector.CellsU("TxtPinX").FormulaU = f"Width*{tpx}+{tox} in"
     connector.CellsU("TxtPinY").FormulaU = f"Height*0.5+{toy} in"
+    if conn.get("lineWeight") is not None:
+        connector.CellsU("LineWeight").FormulaU = f"{float(conn['lineWeight'])} pt"
     end_arrow = int(conn.get("endArrow", 4))
     connector.CellsU("EndArrow").ResultIU = end_arrow
 
@@ -274,6 +303,8 @@ def main():
     parser.add_argument("output", help="Output .vsdx path")
     parser.add_argument("--visible", action="store_true", help="Show Visio window")
     parser.add_argument("--diagnostics", action="store_true", help="Print diagnostics")
+    parser.add_argument("--no-layout", action="store_true", help="Disable auto-layout engine")
+    parser.add_argument("--strict", action="store_true", help="Fail on collisions instead of warning")
     args = parser.parse_args()
 
     spec_path = os.path.abspath(args.spec)
@@ -281,6 +312,37 @@ def main():
 
     with open(spec_path, "r", encoding="utf-8") as f:
         spec = json.load(f)
+
+    # ★ NEW: Validate spec
+    if LAYOUT_ENGINE_AVAILABLE and not args.no_layout:
+        is_valid, errors = validate_spec(spec)
+        if not is_valid:
+            print("\n[ERROR] JSON spec validation failed:", file=sys.stderr)
+            for err in errors:
+                print(f"   - {err}", file=sys.stderr)
+            if args.strict:
+                sys.exit(1)
+
+        # ★ NEW: Apply auto-layout engine
+        if 'layout' in spec and spec['layout'].get('engine') != 'manual':
+            print("\n" + "="*60)
+            spec = auto_layout(spec, verbose=args.diagnostics or True)
+            print("="*60 + "\n")
+        else:
+            # Even for manual layout, check collisions
+            if spec.get('layout', {}).get('checkCollisions', False):
+                for page in spec.get('pages', []):
+                    collisions = detect_collisions(
+                        page.get('nodes', []),
+                        min_spacing=spec.get('layout', {}).get('spacing', {}).get('horizontal', 0.5)
+                    )
+                    if collisions:
+                        print(f"\n[WARN] Page '{page.get('name', '?')}' has {len(collisions)} collision(s)", file=sys.stderr)
+                        for c in collisions[:5]:  # 只显示前5个
+                            print(f"   - {c['node1']} <-> {c['node2']}", file=sys.stderr)
+                        if args.strict:
+                            print("\n[ERROR] Collisions not allowed in --strict mode", file=sys.stderr)
+                            sys.exit(1)
 
     out_dir = os.path.dirname(output_path)
     if out_dir and not os.path.exists(out_dir):
@@ -338,7 +400,11 @@ def main():
                 page.PageSheet.CellsU("PageHeight").ResultIU = ph
 
                 shapes_by_id = {}
-                for node in page_spec.get("nodes", []):
+                # ★ NEW: Sort nodes by zOrder (background first)
+                nodes = page_spec.get("nodes", [])
+                nodes_sorted = sorted(nodes, key=lambda n: n.get("zOrder", 5))
+
+                for node in nodes_sorted:
                     if not node.get("id"):
                         raise ValueError("Every node must include an id.")
                     shapes_by_id[str(node["id"])] = add_node(page, node, stencil_map)
