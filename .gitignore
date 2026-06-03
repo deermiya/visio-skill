@@ -10,6 +10,9 @@ network-topology.json
 # User-generated batch files
 *.bat
 
+__pycache__/
+
+
 # Windows
 Thumbs.db
 Desktop.ini

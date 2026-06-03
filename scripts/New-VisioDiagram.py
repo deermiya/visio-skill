@@ -211,6 +211,8 @@ def add_connection(visio, page, shapes_by_id: dict, conn: dict):
         connector.CellsU("LineWeight").FormulaU = f"{float(conn['lineWeight'])} pt"
     end_arrow = int(conn.get("endArrow", 4))
     connector.CellsU("EndArrow").ResultIU = end_arrow
+    if conn.get("beginArrow") is not None:
+        connector.CellsU("BeginArrow").ResultIU = int(conn["beginArrow"])
 
 
 def add_line(page, line: dict):
